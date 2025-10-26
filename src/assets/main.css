@@ -1,0 +1,402 @@
+/* Importar a fonte 'Poppins' */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* Importar os PrimeIcons */
+@import 'primeicons/primeicons.css';
+
+/*
+  ================================================
+  1. VARIÁVEIS DE COR - TEMA LARANJA 🔥
+  ================================================
+*/
+:root {
+  --font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Fundos (mantidos) */
+  --bg-primary: #161616;
+  --bg-secondary: #222222;
+  --bg-card: #292929;
+  --border-color: #464646;
+
+  /* Textos (mantidos) */
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-placeholder: #64748b;
+
+  /* Cor de Destaque - Laranja */
+  --accent-primary: #e85d29;
+  /* Laranja principal */
+  --accent-primary-hover: #d9531f;
+  /* Laranja mais escuro para hover */
+  --accent-primary-focus: #c04a1b;
+  /* Laranja ainda mais escuro para foco */
+  --accent-primary-glow: rgba(232, 93, 41, 0.25);
+  /* Glow laranja (ligeiramente mais forte) */
+  --accent-primary-text: #fff5f0;
+  /* Texto claro (quase branco com toque laranja) para contraste */
+
+  /* Cores de Status (mantidas, mas podem ser ajustadas se necessário) */
+  --status-success: #22c55e;
+  --status-warning: #f59e0b;
+  /* Nota: Este laranja pode ser similar ao accent */
+  --status-danger: #ef4444;
+}
+
+/*
+  ================================================
+  2. ESTILOS GLOBAIS (Body, HTML)
+  ================================================
+*/
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
+  /* Gradiente sutil no fundo (mantido) */
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 30%);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Links globais agora usam a cor laranja */
+a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-primary-hover);
+}
+
+/*
+  ================================================
+  3. BARRA DE ROLAGEM (mantida)
+  ================================================
+*/
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4a5568;
+  border-radius: 5px;
+  border: 2px solid var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #718096;
+}
+
+/*
+  ================================================
+  4. ESTILOS GLOBAIS DE PRIME VUE (com ajustes para laranja)
+  ================================================
+*/
+
+/* Botões */
+:root .p-button {
+  transition: all 0.2s ease-in-out;
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  border: none;
+  padding: 0.75rem 1.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+:root .p-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-primary-glow);
+  /* Glow Laranja */
+}
+
+:root .p-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Botão Primário (Accent - Laranja) */
+:root .p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-danger):not(.p-button-warning) {
+  background: var(--accent-primary);
+  color: var(--accent-primary-text);
+  /* Texto claro */
+}
+
+:root .p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-danger):not(.p-button-warning):hover {
+  background: var(--accent-primary-hover);
+}
+
+:root .p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-danger):not(.p-button-warning):focus {
+  background: var(--accent-primary-focus);
+}
+
+/* Botão Secundário (Outline/Ghost - mantido) */
+:root .p-button.p-button-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+}
+
+:root .p-button.p-button-secondary:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Botão de Aviso (Amarelo/Laranja - mantido) */
+:root .p-button.p-button-warning {
+  background: var(--status-warning);
+  color: var(--bg-primary);
+  /* Texto escuro contrasta melhor com amarelo */
+}
+
+:root .p-button.p-button-warning:hover {
+  background: #d97706;
+  /* Tom mais escuro */
+}
+
+:root .p-button.p-button-warning:focus {
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+/* Botão de Perigo (ex. Finalizar - mantido) */
+:root .p-button.p-button-danger.p-button-outlined {
+  color: var(--status-danger);
+  border-color: var(--status-danger);
+  box-shadow: none;
+}
+
+:root .p-button.p-button-danger.p-button-outlined:hover {
+  background: rgba(239, 68, 68, 0.05);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Botão de Texto (ex. Cancelar - mantido) */
+:root .p-button.p-button-text {
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+:root .p-button.p-button-text:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Botão Arredondado (para ícones - mantido) */
+:root .p-button.p-button-rounded {
+  padding: 0.75rem;
+}
+
+/* Tamanhos de Botão (mantido) */
+:root .p-button-lg {
+  padding: 1rem 1.75rem;
+  font-size: 1.1rem;
+}
+
+
+/* Inputs */
+:root .p-inputtext,
+:root .p-inputnumber .p-inputtext,
+:root .p-dropdown {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-family);
+  font-size: 1rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+:root .p-inputtext::placeholder {
+  color: var(--text-placeholder);
+}
+
+/* Foco Laranja */
+:root .p-inputtext:enabled:focus,
+:root .p-inputnumber:not(.p-disabled) .p-inputtext:focus,
+:root .p-dropdown:not(.p-disabled).p-focus {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 3px var(--accent-primary-glow) !important;
+  /* Glow Laranja */
+}
+
+/* InputNumber botões (mantido) */
+:root .p-inputnumber-button {
+  background: var(--bg-card) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+:root .p-inputnumber-button:hover {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Dropdown (mantido) */
+:root .p-dropdown .p-dropdown-label {
+  padding: 0;
+}
+
+:root .p-dropdown .p-dropdown-trigger {
+  color: var(--text-secondary);
+}
+
+:root .p-dropdown-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+:root .p-dropdown-item {
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+}
+
+:root .p-dropdown-item:not(.p-highlight):not(.p-disabled):hover {
+  background: var(--bg-secondary);
+}
+
+/* Seleção Laranja */
+:root .p-dropdown-item.p-highlight {
+  background: var(--accent-primary) !important;
+  color: var(--accent-primary-text) !important;
+}
+
+
+/* DataTable (mantido) */
+:root .p-datatable {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+:root .p-datatable .p-datatable-thead>tr>th {
+  background: var(--bg-secondary);
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  padding: 0.75rem 1rem;
+}
+
+:root .p-datatable .p-datatable-tbody>tr {
+  background: transparent;
+  color: var(--text-primary);
+  transition: background-color 0.2s ease;
+}
+
+:root .p-datatable .p-datatable-tbody>tr:nth-child(even) {
+  background-color: rgba(32, 36, 44, 0.3);
+}
+
+:root .p-datatable .p-datatable-tbody>tr:hover {
+  background-color: var(--bg-card);
+}
+
+:root .p-datatable .p-datatable-tbody>tr>td {
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.85rem 1rem;
+}
+
+:root .p-datatable .p-datatable-tbody>tr:last-child>td {
+  border-bottom: none;
+}
+
+
+/* Diálogo (mantido) */
+:root .p-dialog {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+:root .p-dialog .p-dialog-header {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.25rem 1.75rem;
+  font-size: 1.2rem;
+}
+
+:root .p-dialog .p-dialog-content {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 1.75rem;
+}
+
+:root .p-dialog .p-dialog-footer {
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  padding: 1rem 1.75rem;
+}
+
+/* Toast */
+:root .p-toast .p-toast-message {
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+:root .p-toast .p-toast-message-content {
+  color: var(--text-primary);
+}
+
+:root .p-toast .p-toast-summary {
+  font-weight: 600;
+}
+
+:root .p-toast .p-toast-detail {
+  color: var(--text-secondary);
+}
+
+/* Ícone Laranja */
+:root .p-toast .p-toast-message-icon {
+  color: var(--accent-primary);
+}
+
+/* Ícones de status mantidos */
+:root .p-toast .p-toast-message.p-toast-message-success .p-toast-message-icon {
+  color: var(--status-success);
+}
+
+:root .p-toast .p-toast-message.p-toast-message-warn .p-toast-message-icon {
+  color: var(--status-warning);
+}
+
+:root .p-toast .p-toast-message.p-toast-message-error .p-toast-message-icon {
+  color: var(--status-danger);
+}
