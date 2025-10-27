@@ -791,7 +791,7 @@ function confirmFinish() {
   font-size: 2.8rem;
   font-weight: 700;
   color: var(--text-primary);
-  background: linear-gradient(45deg, var(--accent-primary), #fb923c);
+  background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 0.5rem;
