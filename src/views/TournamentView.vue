@@ -3,7 +3,6 @@
     class="tournament-page"
     :class="{ 'drawer-open': isDrawerOpen }"
   >
-
     <Button
       icon="pi pi-bars"
       class="drawer-toggle p-button-rounded p-button-secondary"
@@ -170,7 +169,7 @@
             icon="pi pi-bolt"
             @click="generateRandomResults"
             class="p-button-warning"
-            v-if="!allResultsRegistered && currentTables.length > 0"
+            v-if="(!allResultsRegistered && currentTables.length > 0) && DEBUG"
           />
           <Button
             label="Próxima Rodada"
@@ -414,6 +413,8 @@ import { ref, computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useTournament } from '../composables/useTournament'
 
+const DEBUG = false
+
 const isDrawerOpen = ref(false)
 const toast = useToast()
 const {
@@ -497,7 +498,7 @@ function handleSaveResults() {
     detail: `Resultados da mesa ${selectedTable.value + 1} foram ${isEditingResult.value ? 'atualizados' : 'registrados'}.`,
     life: 3000
   })
-  isEditingResult.value = false // Reset flag
+  isEditingResult.value = false
 }
 
 function handleEndTournament() {
@@ -528,7 +529,7 @@ function openResultDialog(tableIndex, isEditing = false) {
 }
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
+  if (e.key === 'Enter' && DEBUG) {
     generateRandomPlayers()
   }
 })
@@ -555,7 +556,7 @@ function generateRandomResults() {
     pendingTablesCount++
     const numPlayersOnTable = table.players.length
     const positions = Array.from({ length: numPlayersOnTable }, (_, i) => i + 1).sort(() => Math.random() - 0.5)
-    saveResults(tableIndex, positions) // Pass false for isEditing
+    saveResults(tableIndex, positions)
   })
   if (pendingTablesCount > 0) {
     toast.add({ severity: 'success', summary: 'Resultados Gerados', detail: `Resultados aleatórios para ${pendingTablesCount} mesas foram registrados.`, life: 3000 })
@@ -564,7 +565,6 @@ function generateRandomResults() {
   }
 }
 
-// Confirmation handler functions
 function confirmReset() {
   resetTournament()
   showResetConfirmDialog.value = false
@@ -572,15 +572,13 @@ function confirmReset() {
 }
 
 function confirmFinish() {
-  handleEndTournament() // Chama a função que muda o estado
+  handleEndTournament()
   showFinishConfirmDialog.value = false
-  // Abre o diálogo de resultados FINAIS
-  showFinalResultsDialog.value = true // *** ADICIONADO ***
+  showFinalResultsDialog.value = true
 }
 </script>
 
 <style scoped>
-/* * 1. LAYOUT PRINCIPAL E DRAWER */
 .tournament-page {
   display: flex;
   width: 100%;
@@ -779,7 +777,6 @@ function confirmFinish() {
   cursor: help;
 }
 
-/* * 3. CONTEÚDO PRINCIPAL - SETUP */
 .setup-container {
   max-width: 900px;
   margin: 0 auto;
@@ -927,7 +924,6 @@ function confirmFinish() {
   color: var(--text-secondary);
 }
 
-/* * 4. CONTEÚDO PRINCIPAL - ATIVO */
 .active-header {
   display: flex;
   justify-content: space-between;
@@ -1154,11 +1150,6 @@ function confirmFinish() {
   border-top: 1px dashed var(--border-color);
 }
 
-/* * 5. DIÁLOGOS */
-:deep(.results-dialog) .p-dialog-content {
-  background-color: var(--bg-secondary);
-}
-
 .results-info {
   text-align: center;
   margin-bottom: 2rem;
@@ -1182,7 +1173,6 @@ function confirmFinish() {
 }
 
 .results-dialog .p-inputgroup-addon {
-  background: var(--bg-card);
   border-color: var(--border-color);
   color: var(--text-secondary);
 }
@@ -1235,7 +1225,6 @@ function confirmFinish() {
   color: var(--text-secondary);
 }
 
-/* Cor ajustada */
 :deep(.p-dialog[header="Confirmar Reinício"]) .confirmation-content i {
   color: var(--status-danger);
 }
@@ -1244,7 +1233,6 @@ function confirmFinish() {
   color: var(--accent-primary);
 }
 
-/* *** NOVO: Estilos para Diálogo Final *** */
 .final-results-content {
   text-align: center;
 }
@@ -1269,7 +1257,6 @@ function confirmFinish() {
 .winner-name .pi-crown {
   font-size: 1.5rem;
   color: #f59e0b;
-  /* Coroa dourada */
 }
 
 .final-results-content h4 {
@@ -1290,7 +1277,6 @@ function confirmFinish() {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background-color: var(--bg-primary);
-  /* Fundo ligeiramente diferente */
 }
 
 .final-ranking-item {
@@ -1307,8 +1293,6 @@ function confirmFinish() {
 .final-ranking-item.top-player {
   background-color: rgba(255, 255, 255, 0.03);
 }
-
-/* Destaque sutil para Top 3 */
 
 .final-pos {
   font-weight: 600;
@@ -1420,7 +1404,6 @@ function confirmFinish() {
     margin-bottom: 2rem;
   }
 
-  /* Flex column on mobile */
   .rounds-group,
   .generate-group,
   .add-player-group {
@@ -1468,7 +1451,6 @@ function confirmFinish() {
     width: 95vw !important;
   }
 
-  /* Diálogos menores */
   .table-card-players {
     grid-template-columns: 1fr;
   }
@@ -1527,7 +1509,6 @@ function confirmFinish() {
     padding: 0.8rem 1.5rem;
   }
 
-  /* Estilos do diálogo final no mobile */
   .winner-name {
     font-size: 1.6rem;
   }

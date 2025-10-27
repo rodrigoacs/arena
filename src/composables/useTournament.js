@@ -1,11 +1,29 @@
-import { ref, computed } from 'vue'
+
+import { ref, computed, watchEffect } from 'vue'
+
+const STORAGE_KEY = 'arena_tournament_state'
+
+function loadState() {
+  const savedState = localStorage.getItem(STORAGE_KEY)
+  if (savedState) {
+    try {
+      return JSON.parse(savedState)
+    } catch (e) {
+      console.error('Falha ao carregar estado salvo:', e)
+      localStorage.removeItem(STORAGE_KEY)
+    }
+  }
+  return null
+}
 
 export function useTournament() {
-  const roundCount = ref(3)
-  const players = ref([])
-  const tournamentStarted = ref(false)
-  const currentRound = ref(1)
-  const rounds = ref([])
+  const initialState = loadState()
+
+  const roundCount = ref(initialState?.roundCount || 3)
+  const players = ref(initialState?.players || [])
+  const tournamentStarted = ref(initialState?.tournamentStarted || false)
+  const currentRound = ref(initialState?.currentRound || 1)
+  const rounds = ref(initialState?.rounds || [])
 
   const playerCount = computed(() => players.value.length)
   const tableCount = computed(() => {
@@ -167,6 +185,17 @@ export function useTournament() {
     rounds.value = []
     players.value.forEach(p => { p.points = 0; p.matches = [] })
   }
+
+  watchEffect(() => {
+    const stateToSave = {
+      roundCount: roundCount.value,
+      players: players.value,
+      tournamentStarted: tournamentStarted.value,
+      currentRound: currentRound.value,
+      rounds: rounds.value
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave))
+  })
 
   return {
     playerCount, tableCount,
