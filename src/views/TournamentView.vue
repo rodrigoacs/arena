@@ -413,7 +413,7 @@ import { ref, computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useTournament } from '../composables/useTournament'
 
-const DEBUG = false
+const DEBUG = true
 
 const isDrawerOpen = ref(false)
 const toast = useToast()
@@ -941,7 +941,7 @@ function confirmFinish() {
   color: var(--text-primary);
   line-height: 1.2;
   margin: 0;
-  background: linear-gradient(45deg, var(--accent-primary), #fb923c);
+  background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
