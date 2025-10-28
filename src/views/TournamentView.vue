@@ -413,7 +413,7 @@ import { ref, computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useTournament } from '../composables/useTournament'
 
-const DEBUG = true
+const DEBUG = false
 
 const isDrawerOpen = ref(false)
 const toast = useToast()
