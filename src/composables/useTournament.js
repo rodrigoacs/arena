@@ -1,4 +1,3 @@
-
 import { ref, computed, watchEffect } from 'vue'
 
 const STORAGE_KEY = 'arena_tournament_state'
@@ -16,23 +15,26 @@ function loadState() {
   return null
 }
 
+const initialState = loadState()
+
+const roundCount = ref(initialState?.roundCount || 3)
+const playersPerTable = ref(initialState?.playersPerTable || 4)
+const players = ref(initialState?.players || [])
+const tournamentStarted = ref(initialState?.tournamentStarted || false)
+const currentRound = ref(initialState?.currentRound || 1)
+const rounds = ref(initialState?.rounds || [])
+
+let isWatcherRegistered = false
+
 export function useTournament() {
-  const initialState = loadState()
-
-  const roundCount = ref(initialState?.roundCount || 3)
-  const players = ref(initialState?.players || [])
-  const tournamentStarted = ref(initialState?.tournamentStarted || false)
-  const currentRound = ref(initialState?.currentRound || 1)
-  const rounds = ref(initialState?.rounds || [])
-
   const playerCount = computed(() => players.value.length)
   const tableCount = computed(() => {
-    if (players.value.length < 4) return 0
-    return Math.ceil(players.value.length / 4)
+    if (players.value.length < playersPerTable.value) return 0
+    return Math.ceil(players.value.length / playersPerTable.value)
   })
 
   const getAveragePosition = (player) => {
-    if (!player.matches || player.matches.length === 0) return 4
+    if (!player.matches || player.matches.length === 0) return playersPerTable.value
     return player.matches.reduce((sum, match) => sum + match.position, 0) / player.matches.length
   }
 
@@ -108,7 +110,7 @@ export function useTournament() {
   }
 
   function startTournament() {
-    if (players.value.length < 4) return false
+    if (players.value.length < playersPerTable.value) return false
     players.value.forEach(p => { p.points = 0; p.matches = [] })
     currentRound.value = 1
     rounds.value = []
@@ -186,20 +188,24 @@ export function useTournament() {
     players.value.forEach(p => { p.points = 0; p.matches = [] })
   }
 
-  watchEffect(() => {
-    const stateToSave = {
-      roundCount: roundCount.value,
-      players: players.value,
-      tournamentStarted: tournamentStarted.value,
-      currentRound: currentRound.value,
-      rounds: rounds.value
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave))
-  })
+  if (!isWatcherRegistered) {
+    watchEffect(() => {
+      const stateToSave = {
+        roundCount: roundCount.value,
+        playersPerTable: playersPerTable.value,
+        players: players.value,
+        tournamentStarted: tournamentStarted.value,
+        currentRound: currentRound.value,
+        rounds: rounds.value
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave))
+    })
+    isWatcherRegistered = true
+  }
 
   return {
     playerCount, tableCount,
-    roundCount, players, tournamentStarted,
+    roundCount, playersPerTable, players, tournamentStarted,
     currentRound, rounds, sortedPlayers, currentTables, allResultsRegistered,
     addPlayer, removePlayer, startTournament, saveResults, nextRound,
     endTournament,
