@@ -1,4 +1,5 @@
 import { ref, computed, watchEffect } from 'vue'
+import { api } from '../services/api'
 
 const STORAGE_KEY = 'arena_tournament_state'
 
@@ -17,9 +18,12 @@ function loadState() {
 
 const initialState = loadState()
 
+// ESTADO GLOBAL
+const activeTournamentId = ref(initialState?.activeTournamentId || null)
 const roundCount = ref(initialState?.roundCount || 3)
 const playersPerTable = ref(initialState?.playersPerTable || 4)
 const players = ref(initialState?.players || [])
+const allAdminPlayers = ref([])
 const tournamentStarted = ref(initialState?.tournamentStarted || false)
 const currentRound = ref(initialState?.currentRound || 1)
 const rounds = ref(initialState?.rounds || [])
@@ -67,10 +71,35 @@ export function useTournament() {
     return currentTables.value.every(table => table.status === 'completed')
   })
 
-  function addPlayer(name) {
+  async function fetchExistingPlayers() {
+    try {
+      allAdminPlayers.value = await api.getPlayers()
+    } catch (error) {
+      console.error("Erro ao buscar jogadores:", error)
+    }
+  }
+
+  function togglePlayer(dbPlayer) {
+    const index = players.value.findIndex(p => p.id === dbPlayer.id)
+    if (index > -1) {
+      players.value.splice(index, 1)
+    } else {
+      // Inicia o deck_name vazio ao selecionar o jogador
+      players.value.push({ id: dbPlayer.id, name: dbPlayer.name, deck_name: '', points: 0, matches: [] })
+    }
+  }
+
+  async function addPlayer(name) {
     if (!name.trim()) return false
-    players.value.push({ id: Date.now() + players.value.length, name: name.trim(), points: 0, matches: [] })
-    return true
+    try {
+      const newPlayer = await api.createPlayer(name.trim())
+      allAdminPlayers.value.push(newPlayer)
+      players.value.push({ id: newPlayer.id, name: newPlayer.name, deck_name: '', points: 0, matches: [] })
+      return true
+    } catch (error) {
+      console.error(error)
+      return false
+    }
   }
 
   function removePlayer(index) {
@@ -109,14 +138,26 @@ export function useTournament() {
     rounds.value.push({ number: currentRound.value, tables })
   }
 
-  function startTournament() {
+  async function startTournament() {
     if (players.value.length < playersPerTable.value) return false
-    players.value.forEach(p => { p.points = 0; p.matches = [] })
-    currentRound.value = 1
-    rounds.value = []
-    tournamentStarted.value = true
-    generateRound()
-    return true
+
+    try {
+      const dataFormatada = new Date().toISOString().split('T')[0]
+      const nomeTorneio = `Etapa ${dataFormatada}`
+
+      const dbTournament = await api.createTournament(nomeTorneio, dataFormatada)
+      activeTournamentId.value = dbTournament.id
+
+      players.value.forEach(p => { p.points = 0; p.matches = [] })
+      currentRound.value = 1
+      rounds.value = []
+      tournamentStarted.value = true
+      generateRound()
+      return true
+    } catch (error) {
+      console.error(error)
+      return false
+    }
   }
 
   function revertResults(tableIndex, roundNumber) {
@@ -177,20 +218,58 @@ export function useTournament() {
     return true
   }
 
-  function endTournament() {
-    tournamentStarted.value = false
+  async function endTournament() {
+    if (!activeTournamentId.value) return false
+
+    try {
+      const formattedResults = sortedPlayers.value.map((p, index) => {
+        const golds = (p.matches || []).filter(m => m.position === 1).length
+        const silvers = (p.matches || []).filter(m => m.position === 2).length
+        const bronzes = (p.matches || []).filter(m => m.position === 3).length
+
+        return {
+          player_id: p.id,
+          final_position: index + 1,
+          total_points: p.points || 0,
+          golds,
+          silvers,
+          bronzes,
+          deck_name: p.deck_name || null // Passa o nome do deck para a API
+        }
+      })
+
+      await api.saveResults(activeTournamentId.value, formattedResults)
+      tournamentStarted.value = false
+      return true
+    } catch (error) {
+      console.error(error)
+      return false
+    }
   }
 
-  function resetTournament() {
+  async function cancelTournament() {
+    if (activeTournamentId.value) {
+      try {
+        await api.deleteTournament(activeTournamentId.value)
+      } catch (error) {
+        console.error('Falha ao limpar o torneio abortado no banco', error)
+      }
+    }
+    clearTournamentState()
+  }
+
+  function clearTournamentState() {
     tournamentStarted.value = false
+    activeTournamentId.value = null
     currentRound.value = 1
     rounds.value = []
-    players.value.forEach(p => { p.points = 0; p.matches = [] })
+    players.value.forEach(p => { p.points = 0; p.matches = []; p.deck_name = '' })
   }
 
   if (!isWatcherRegistered) {
     watchEffect(() => {
       const stateToSave = {
+        activeTournamentId: activeTournamentId.value,
         roundCount: roundCount.value,
         playersPerTable: playersPerTable.value,
         players: players.value,
@@ -205,11 +284,9 @@ export function useTournament() {
 
   return {
     playerCount, tableCount,
-    roundCount, playersPerTable, players, tournamentStarted,
+    roundCount, playersPerTable, players, allAdminPlayers, tournamentStarted, activeTournamentId,
     currentRound, rounds, sortedPlayers, currentTables, allResultsRegistered,
-    addPlayer, removePlayer, startTournament, saveResults, nextRound,
-    endTournament,
-    resetTournament, getAveragePosition,
-    revertResults
+    addPlayer, togglePlayer, startTournament, saveResults, nextRound,
+    endTournament, cancelTournament, clearTournamentState, getAveragePosition, revertResults, fetchExistingPlayers
   }
 }
