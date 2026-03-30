@@ -87,19 +87,19 @@
                 class="text-blue-500 font-bold"
               ></Column>
 
-              <Column header="1º (Au)">
+              <Column header="1º">
                 <template #body="slotProps">
                   <span class="text-yellow-500 font-bold">{{ slotProps.data.total_golds }}</span>
                 </template>
               </Column>
 
-              <Column header="2º (Ag)">
+              <Column header="2º">
                 <template #body="slotProps">
                   <span class="text-gray-400 font-bold">{{ slotProps.data.total_silvers }}</span>
                 </template>
               </Column>
 
-              <Column header="3º (Cu)">
+              <Column header="3º">
                 <template #body="slotProps">
                   <span class="text-amber-700 font-bold">{{ slotProps.data.total_bronzes }}</span>
                 </template>
