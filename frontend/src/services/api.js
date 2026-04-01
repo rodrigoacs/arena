@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3333/api'
+const API_URL = 'http://arena.biblioplexo.com/api'
 
 export const api = {
   // --- CONTROLE DE SESSÃO ---
