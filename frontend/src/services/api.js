@@ -1,4 +1,4 @@
-const API_URL = 'http://arena.biblioplexo.com/api'
+const API_URL = 'https://arena.biblioplexo.com/api'
 
 export const api = {
   // --- CONTROLE DE SESSÃO ---
