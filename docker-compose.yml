@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: arena-frontend  
+    ports:
+      - "8080:80"
+    volumes:
+      - ./uploads:/usr/share/nginx/html/uploads
+    depends_on:
+      - backend
+    networks:
+      - proxy  
+
+  backend:
+    build:
+      context: ./backend
+    container_name: arena-backend
+    ports:
+      - "3333:3333"
+    env_file:
+      - ./backend/src/.env
+    networks:
+      - proxy    
+
+networks:
+  proxy:
+    external: true
