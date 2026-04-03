@@ -1,7 +1,8 @@
 const API_URL = 'https://arena.biblioplexo.com/api'
+// const API_URL = `http://localhost:3333/api`
+
 
 export const api = {
-  // --- CONTROLE DE SESSÃO ---
   getToken() { return localStorage.getItem('arena_token') },
   getAdminId() { return localStorage.getItem('arena_admin_id') },
   getLeagueId() { return localStorage.getItem('arena_league_id') },
@@ -17,13 +18,11 @@ export const api = {
 
   logout() {
     localStorage.clear()
-    // Redireciona para o login caso o token expire ou o usuário saia
     if (window.location.pathname !== '/login') {
       window.location.href = '/login'
     }
   },
 
-  // Helper para centralizar os Headers e a lógica de erro 401
   async request(endpoint, options = {}) {
     const headers = {
       'Content-Type': 'application/json',
@@ -33,7 +32,6 @@ export const api = {
 
     const response = await fetch(`${API_URL}${endpoint}`, { ...options, headers })
 
-    // Se o token for inválido ou expirar, desloga automaticamente
     if (response.status === 401) {
       this.logout()
       throw new Error('Sessão expirada. Por favor, faça login novamente.')
@@ -47,7 +45,6 @@ export const api = {
     return response.json()
   },
 
-  // --- ADMIN & AUTH ---
   async login(email, password) {
     const data = await this.request('/admins/login', {
       method: 'POST',
@@ -57,7 +54,6 @@ export const api = {
     return data.admin
   },
 
-  // --- LIGAS ---
   async getAdminLeagues() {
     return this.request(`/leagues/admin/${this.getAdminId()}`)
   },
@@ -69,7 +65,6 @@ export const api = {
     })
   },
 
-  // --- JOGADORES ---
   async getPlayers() {
     return this.request(`/players/admin/${this.getAdminId()}`)
   },
@@ -94,7 +89,6 @@ export const api = {
     })
   },
 
-  // --- TORNEIOS ---
   async createTournament(name, date, status = 'active') {
     return this.request('/tournaments', {
       method: 'POST',
@@ -118,7 +112,6 @@ export const api = {
     })
   },
 
-  // --- RESULTADOS E RANKING ---
   async saveResults(tournamentId, results) {
     return this.request('/results', {
       method: 'POST',
@@ -130,7 +123,6 @@ export const api = {
     return this.request(`/results/ranking/${this.getLeagueId()}`)
   },
 
-  // --- ROTAS PÚBLICAS (Sem Token) ---
   async getPublicLeagueData(leagueId) {
     const response = await fetch(`${API_URL}/public/league/${leagueId}`)
     if (!response.ok) {

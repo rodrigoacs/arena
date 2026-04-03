@@ -13,8 +13,8 @@ export const saveTournamentResults = async (req, res) => {
     for (const result of results) {
       await query(
         `INSERT INTO tournament_results 
-         (tournament_id, player_id, final_position, total_points, tiebreaker_golds, tiebreaker_silvers, tiebreaker_bronzes, deck_name) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         (tournament_id, player_id, final_position, total_points, tiebreaker_golds, tiebreaker_silvers, tiebreaker_bronzes, deck_name, deck_url) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          ON CONFLICT (tournament_id, player_id) 
          DO UPDATE SET 
             final_position = EXCLUDED.final_position, 
@@ -22,7 +22,8 @@ export const saveTournamentResults = async (req, res) => {
             tiebreaker_golds = EXCLUDED.tiebreaker_golds,
             tiebreaker_silvers = EXCLUDED.tiebreaker_silvers,
             tiebreaker_bronzes = EXCLUDED.tiebreaker_bronzes,
-            deck_name = EXCLUDED.deck_name`,
+            deck_name = EXCLUDED.deck_name,
+            deck_url = EXCLUDED.deck_url`,
         [
           tournament_id,
           result.player_id,
@@ -31,7 +32,8 @@ export const saveTournamentResults = async (req, res) => {
           result.golds || 0,
           result.silvers || 0,
           result.bronzes || 0,
-          result.deck_name || null
+          result.deck_name || null,
+          result.deck_url || null
         ]
       )
     }

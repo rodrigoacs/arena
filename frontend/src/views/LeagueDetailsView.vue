@@ -190,21 +190,26 @@
                       class="inner-pos"
                       :class="`medal-${res.final_position}`"
                     >{{ res.final_position }}º</div>
+
                     <div class="inner-player">
                       <span class="inner-name">{{ res.player_name }}</span>
-
-                      <div
+                      <span
                         v-if="res.deck_name"
-                        class="mt-1"
+                        class="inner-deck-name"
                       >
-                        <Button
-                          icon="pi pi-list"
-                          label="Ver Lista do Deck"
-                          class="p-button-text p-button-sm p-0 text-blue-500 hover:text-blue-700"
-                          @click="openDeckView(res.player_name, res.deck_name)"
-                        />
-                      </div>
+                        ({{ res.deck_name }})
+                      </span>
+                      <a
+                        v-if="res.deck_url"
+                        :href="res.deck_url"
+                        target="_blank"
+                        class="inner-deck-link"
+                      >
+                        <i class="pi pi-external-link"></i>
+                        Ver Lista
+                      </a>
                     </div>
+
                     <div class="inner-pts">{{ res.total_points }} pts</div>
                   </div>
                 </div>
@@ -216,46 +221,34 @@
     </main>
 
     <Dialog
-      v-model:visible="showDeckViewModal"
-      :header="`Lista: ${deckViewPlayer}`"
-      modal
-      :style="{ width: '90vw', maxWidth: '500px' }"
-    >
-      <div class="deck-viewer">
-        <pre class="deck-content">{{ deckViewContent }}</pre>
-      </div>
-      <template #footer>
-        <Button
-          label="Fechar"
-          icon="pi pi-times"
-          class="p-button-text"
-          @click="showDeckViewModal = false"
-        />
-      </template>
-    </Dialog>
-
-    <Dialog
       v-model:visible="showDeckInputModal"
-      :header="`Colar Lista - Posição ${currentEditingDeckIndex !== null ? currentEditingDeckIndex + 1 : ''}º`"
+      :header="`Comandante - Posição ${currentEditingDeckIndex !== null ? currentEditingDeckIndex + 1 : ''}º`"
       modal
-      :style="{ width: '90vw', maxWidth: '500px' }"
+      :style="{ width: '90vw', maxWidth: '400px' }"
     >
-      <div class="p-fluid mt-2">
-        <p class="text-sm text-gray-500 mb-2">Cole a lista completa exportada do Moxfield, Archidekt ou semelhante.</p>
-        <textarea
-          v-model="tempDecklist"
-          class="p-inputtext w-full font-mono text-sm"
-          rows="12"
-          placeholder="1 Command Tower&#10;1 Sol Ring&#10;..."
-        ></textarea>
+      <div class="p-fluid mt-2 flex flex-column gap-3">
+        <div class="field mb-0">
+          <label class="text-sm font-bold text-gray-700 block mb-2">Nome do Comandante</label>
+          <InputText
+            v-model="tempDeckInfo.name"
+            placeholder="Ex: Atraxa, Praetors' Voice"
+          />
+        </div>
+        <div class="field mb-0">
+          <label class="text-sm font-bold text-gray-700 block mb-2">Link da Lista (Opcional)</label>
+          <InputText
+            v-model="tempDeckInfo.url"
+            placeholder="Link do Moxfield, Archidekt, etc."
+          />
+        </div>
       </div>
       <template #footer>
         <div class="flex justify-content-between w-full mt-3">
           <Button
-            label="Limpar Lista"
+            label="Limpar"
             icon="pi pi-trash"
             class="p-button-text p-button-danger"
-            @click="tempDecklist = ''"
+            @click="clearTempDeck"
           />
           <div class="flex gap-2">
             <Button
@@ -265,7 +258,7 @@
               @click="showDeckInputModal = false"
             />
             <Button
-              label="Confirmar Lista"
+              label="Confirmar"
               icon="pi pi-check"
               class="p-button-primary"
               @click="saveDeckInput"
@@ -378,9 +371,9 @@
                   <Button
                     icon="pi pi-list"
                     class="p-button-rounded p-button-sm flex-shrink-0"
-                    :class="placement.deck_name ? 'p-button-success' : 'p-button-secondary p-button-outlined'"
+                    :class="(placement.deck_name || placement.deck_url) ? 'p-button-success' : 'p-button-secondary p-button-outlined'"
                     @click="openDeckInput(index)"
-                    v-tooltip="placement.deck_name ? 'Editar Lista' : 'Adicionar Lista'"
+                    v-tooltip="(placement.deck_name || placement.deck_url) ? 'Editar Comandante' : 'Adicionar Comandante'"
                   />
                 </div>
 
@@ -443,15 +436,10 @@ const isCreatingPlayer = ref(false)
 
 const expandedTournaments = ref({})
 
-// Estado da Visualização do Deck
-const showDeckViewModal = ref(false)
-const deckViewPlayer = ref('')
-const deckViewContent = ref('')
-
 // Estado da Edição do Deck (Modal de Input)
 const showDeckInputModal = ref(false)
 const currentEditingDeckIndex = ref(null)
-const tempDecklist = ref('')
+const tempDeckInfo = ref({ name: '', url: '' })
 
 const importData = ref({
   name: '',
@@ -485,26 +473,26 @@ function toggleTournament(id) {
   expandedTournaments.value[id] = !expandedTournaments.value[id]
 }
 
-// Funções do Visualizador de Deck
-function openDeckView(playerName, decklist) {
-  deckViewPlayer.value = playerName
-  deckViewContent.value = decklist
-  showDeckViewModal.value = true
-}
-
-// Funções do Editor de Deck (Modal)
 function openDeckInput(index) {
   currentEditingDeckIndex.value = index
-  tempDecklist.value = importData.value.placements[index].deck_name || ''
+  tempDeckInfo.value = {
+    name: importData.value.placements[index].deck_name || '',
+    url: importData.value.placements[index].deck_url || ''
+  }
   showDeckInputModal.value = true
+}
+
+function clearTempDeck() {
+  tempDeckInfo.value = { name: '', url: '' }
 }
 
 function saveDeckInput() {
   if (currentEditingDeckIndex.value !== null) {
-    importData.value.placements[currentEditingDeckIndex.value].deck_name = tempDecklist.value.trim()
+    importData.value.placements[currentEditingDeckIndex.value].deck_name = tempDeckInfo.value.name.trim()
+    importData.value.placements[currentEditingDeckIndex.value].deck_url = tempDeckInfo.value.url.trim()
   }
   showDeckInputModal.value = false
-  toast.add({ severity: 'success', summary: 'Lista Salva', detail: 'Lista de deck anexada ao jogador.', life: 2000 })
+  toast.add({ severity: 'success', summary: 'Comandante Salvo', detail: 'Adicionado à posição.', life: 2000 })
 }
 
 function goBack() {
@@ -542,7 +530,7 @@ function openImportModal() {
   importData.value = {
     name: '',
     date: new Date().toISOString().split('T')[0],
-    placements: Array.from({ length: 16 }, (_, i) => ({ position: i + 1, player_id: null, deck_name: '' }))
+    placements: Array.from({ length: 16 }, (_, i) => ({ position: i + 1, player_id: null, deck_name: '', deck_url: '' }))
   }
   quickPlayerName.value = ''
   showImportModal.value = true
@@ -550,7 +538,7 @@ function openImportModal() {
 
 function addPlacement() {
   const nextPos = importData.value.placements.length + 1
-  importData.value.placements.push({ position: nextPos, player_id: null, deck_name: '' })
+  importData.value.placements.push({ position: nextPos, player_id: null, deck_name: '', deck_url: '' })
 }
 
 function removePlacement(index) {
@@ -614,7 +602,8 @@ async function handleImport() {
         golds: p.position === 1 ? 1 : 0,
         silvers: p.position === 2 ? 1 : 0,
         bronzes: p.position === 3 ? 1 : 0,
-        deck_name: p.deck_name || null
+        deck_name: p.deck_name || null,
+        deck_url: p.deck_url || null
       }))
 
     await api.saveResults(tourney.id, results)
@@ -647,7 +636,7 @@ function exportCSV() {
   }
 
   let csvContent = "data:text/csv;charset=utf-8,"
-  csvContent += "Posição,Jogador,Pontos,1º Lugar (Ouro),2º Lugar (Prata),3º Lugar (Bronze),Média de Posição,Etapas Jogadas\n"
+  csvContent += "Posição,Jogador,Pontos,1º Lugar,2º Lugar,3º Lugar,Média de Posição,Etapas Jogadas\n"
 
   ranking.value.forEach((row, index) => {
     const pos = index + 1
@@ -867,30 +856,6 @@ function exportCSV() {
   color: #f59e0b;
 }
 
-/* Visualizador de Deck */
-.deck-viewer {
-  background: #1e1e1e;
-  /* Fundo escuro estilo código */
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 1rem;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.deck-content {
-  margin: 0;
-  color: #d4d4d4;
-  /* Cor clara */
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  /* Mantém as quebras de linha nativas */
-  word-wrap: break-word;
-}
-
-/* Tabela Interna do Torneio (Corpo Expansível) */
 .tourney-details-body {
   background: var(--bg-primary);
   border-top: 1px dashed var(--border-color);
@@ -906,7 +871,6 @@ function exportCSV() {
 .result-inner-row {
   display: flex;
   align-items: flex-start;
-  /* Alinhamento top para não quebrar o layout */
   background: var(--bg-secondary);
   padding: 0.75rem 1rem;
   border-radius: 8px;
@@ -1062,16 +1026,12 @@ function exportCSV() {
 }
 
 .placements-list-container::-webkit-scrollbar,
-.workspace-sidebar::-webkit-scrollbar,
-textarea::-webkit-scrollbar,
-.deck-viewer::-webkit-scrollbar {
+.workspace-sidebar::-webkit-scrollbar {
   width: 6px;
 }
 
 .placements-list-container::-webkit-scrollbar-thumb,
-.workspace-sidebar::-webkit-scrollbar-thumb,
-textarea::-webkit-scrollbar-thumb,
-.deck-viewer::-webkit-scrollbar-thumb {
+.workspace-sidebar::-webkit-scrollbar-thumb {
   background-color: var(--border-color);
   border-radius: 10px;
 }

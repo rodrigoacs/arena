@@ -25,7 +25,6 @@ export const getLeagueTournaments = async (req, res) => {
   try {
     const { league_id } = req.params
 
-    // A query agora junta o torneio, os resultados e os jogadores num único objeto JSON
     const sql = `
       SELECT 
         t.id, t.admin_id, t.league_id, t.name, t.tournament_date, t.status, t.created_at,
@@ -35,6 +34,7 @@ export const getLeagueTournaments = async (req, res) => {
               'player_name', p.name,
               'final_position', tr.final_position,
               'deck_name', tr.deck_name,
+              'deck_url', tr.deck_url,
               'total_points', tr.total_points
             ) ORDER BY tr.final_position ASC
           ) FILTER (WHERE tr.player_id IS NOT NULL), '[]'

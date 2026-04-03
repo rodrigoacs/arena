@@ -95,17 +95,23 @@
           v-if="players.length > 0"
           class="decks-setup-section"
         >
-          <h3 class="mt-0 mb-3"><i class="pi pi-list mr-2"></i>Listas de Deck (Opcional)</h3>
+          <h3 class="mt-0 mb-3"><i class="pi pi-list mr-2"></i>Comandantes / Decks (Opcional)</h3>
           <div class="decks-grid">
             <div
               v-for="(player, index) in players"
               :key="player.id"
               class="deck-input-group flex align-items-center justify-content-between p-3 border-1 border-round surface-border"
             >
-              <span class="font-bold text-sm">{{ player.name }}</span>
+              <div class="flex flex-column">
+                <span class="font-bold text-sm">{{ player.name }}</span>
+                <span
+                  v-if="player.deck_name"
+                  class="text-xs text-gray-500 mt-1"
+                > ({{ player.deck_name }})</span>
+              </div>
               <Button
-                :label="player.deck_name ? 'Editar Lista' : 'Colar Lista'"
-                :icon="player.deck_name ? 'pi pi-check' : 'pi pi-copy'"
+                :label="player.deck_name ? 'Editar' : 'Adicionar'"
+                :icon="player.deck_name ? 'pi pi-pencil' : 'pi pi-plus'"
                 :class="player.deck_name ? 'p-button-success p-button-outlined p-button-sm' : 'p-button-secondary p-button-outlined p-button-sm'"
                 @click="openDeckInput(index)"
               />
@@ -133,26 +139,33 @@
 
     <Dialog
       v-model:visible="showDeckInputModal"
-      :header="`Lista de ${currentEditingPlayerName}`"
+      :header="`Deck de ${currentEditingPlayerName}`"
       modal
-      :style="{ width: '90vw', maxWidth: '500px' }"
+      :style="{ width: '90vw', maxWidth: '400px' }"
     >
-      <div class="p-fluid mt-2">
-        <p class="text-sm text-gray-500 mb-2">Cole a lista completa exportada do Moxfield, Archidekt ou semelhante.</p>
-        <textarea
-          v-model="tempDecklist"
-          class="p-inputtext w-full font-mono text-sm"
-          rows="12"
-          placeholder="1 Command Tower&#10;1 Sol Ring&#10;..."
-        ></textarea>
+      <div class="p-fluid mt-2 flex flex-column gap-3">
+        <div class="field mb-0">
+          <label class="text-sm font-bold text-gray-700 block mb-2">Nome do Comandante</label>
+          <InputText
+            v-model="tempDeckInfo.name"
+            placeholder="Ex: Atraxa, Praetors' Voice"
+          />
+        </div>
+        <div class="field mb-0">
+          <label class="text-sm font-bold text-gray-700 block mb-2">Link da Lista (Opcional)</label>
+          <InputText
+            v-model="tempDeckInfo.url"
+            placeholder="Link do Moxfield, Archidekt, etc."
+          />
+        </div>
       </div>
       <template #footer>
         <div class="flex justify-content-between w-full mt-3">
           <Button
-            label="Limpar Lista"
+            label="Limpar"
             icon="pi pi-trash"
             class="p-button-text p-button-danger"
-            @click="tempDecklist = ''"
+            @click="clearTempDeck"
           />
           <div class="flex gap-2">
             <Button
@@ -162,7 +175,7 @@
               @click="showDeckInputModal = false"
             />
             <Button
-              label="Salvar Lista"
+              label="Salvar"
               icon="pi pi-check"
               class="p-button-primary"
               @click="saveDeckInput"
@@ -190,10 +203,10 @@ const {
 const newPlayerName = ref('')
 const isProcessing = ref(false)
 
-// Estado da Edição do Deck
+// Estado da Edição do Deck Simplificado
 const showDeckInputModal = ref(false)
 const currentEditingPlayerIndex = ref(null)
-const tempDecklist = ref('')
+const tempDeckInfo = ref({ name: '', url: '' })
 
 const currentEditingPlayerName = computed(() => {
   if (currentEditingPlayerIndex.value !== null && players.value[currentEditingPlayerIndex.value]) {
@@ -216,16 +229,24 @@ function isPlaying(dbPlayer) {
 
 function openDeckInput(index) {
   currentEditingPlayerIndex.value = index
-  tempDecklist.value = players.value[index].deck_name || ''
+  tempDeckInfo.value = {
+    name: players.value[index].deck_name || '',
+    url: players.value[index].deck_url || ''
+  }
   showDeckInputModal.value = true
+}
+
+function clearTempDeck() {
+  tempDeckInfo.value = { name: '', url: '' }
 }
 
 function saveDeckInput() {
   if (currentEditingPlayerIndex.value !== null) {
-    players.value[currentEditingPlayerIndex.value].deck_name = tempDecklist.value.trim()
+    players.value[currentEditingPlayerIndex.value].deck_name = tempDeckInfo.value.name.trim()
+    players.value[currentEditingPlayerIndex.value].deck_url = tempDeckInfo.value.url.trim()
   }
   showDeckInputModal.value = false
-  toast.add({ severity: 'success', summary: 'Lista Salva', detail: 'A lista do deck foi anexada.', life: 2000 })
+  toast.add({ severity: 'success', summary: 'Comandante Salvo', detail: 'Deck anexado ao jogador.', life: 2000 })
 }
 
 async function handleAddPlayer() {
@@ -419,13 +440,11 @@ async function handleStartTournament() {
   padding: 0.5rem;
 }
 
-.player-pool-grid::-webkit-scrollbar,
-textarea::-webkit-scrollbar {
+.player-pool-grid::-webkit-scrollbar {
   width: 6px;
 }
 
-.player-pool-grid::-webkit-scrollbar-thumb,
-textarea::-webkit-scrollbar-thumb {
+.player-pool-grid::-webkit-scrollbar-thumb {
   background-color: var(--border-color);
   border-radius: 10px;
 }

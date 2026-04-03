@@ -84,8 +84,7 @@ export function useTournament() {
     if (index > -1) {
       players.value.splice(index, 1)
     } else {
-      // Inicia o deck_name vazio ao selecionar o jogador
-      players.value.push({ id: dbPlayer.id, name: dbPlayer.name, deck_name: '', points: 0, matches: [] })
+      players.value.push({ id: dbPlayer.id, name: dbPlayer.name, deck_name: '', deck_url: '', points: 0, matches: [] })
     }
   }
 
@@ -94,7 +93,7 @@ export function useTournament() {
     try {
       const newPlayer = await api.createPlayer(name.trim())
       allAdminPlayers.value.push(newPlayer)
-      players.value.push({ id: newPlayer.id, name: newPlayer.name, deck_name: '', points: 0, matches: [] })
+      players.value.push({ id: newPlayer.id, name: newPlayer.name, deck_name: '', deck_url: '', points: 0, matches: [] })
       return true
     } catch (error) {
       console.error(error)
@@ -234,7 +233,8 @@ export function useTournament() {
           golds,
           silvers,
           bronzes,
-          deck_name: p.deck_name || null // Passa o nome do deck para a API
+          deck_name: p.deck_name || null,
+          deck_url: p.deck_url || null
         }
       })
 
@@ -263,7 +263,7 @@ export function useTournament() {
     activeTournamentId.value = null
     currentRound.value = 1
     rounds.value = []
-    players.value.forEach(p => { p.points = 0; p.matches = []; p.deck_name = '' })
+    players.value.forEach(p => { p.points = 0; p.matches = []; p.deck_name = ''; p.deck_url = '' })
   }
 
   if (!isWatcherRegistered) {

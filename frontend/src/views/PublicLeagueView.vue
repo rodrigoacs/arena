@@ -184,21 +184,29 @@
                         class="inner-pos"
                         :class="`medal-${res.final_position}`"
                       >{{ res.final_position }}º</div>
+
                       <div class="inner-player">
                         <span class="inner-name font-bold">{{ res.player_name }}</span>
 
                         <div
                           v-if="res.deck_name"
-                          class="mt-1"
+                          class="text-sm text-gray-500 mt-1"
                         >
-                          <Button
-                            icon="pi pi-list"
-                            label="Ver Lista do Deck"
-                            class="p-button-text p-button-sm p-0 text-blue-500 hover:text-blue-700"
-                            @click="openDeckView(res.player_name, res.deck_name)"
-                          />
+                          <i class="pi pi-id-card mr-1"></i>{{ res.deck_name }}
                         </div>
+
+                        <a
+                          v-if="res.deck_url"
+                          :href="res.deck_url"
+                          target="_blank"
+                          class="mt-1 inline-block p-button p-component p-button-text p-button-sm p-0 text-blue-500 hover:text-blue-700"
+                          style="text-decoration: none;"
+                        >
+                          <span class="pi pi-external-link mr-1 text-xs"></span>
+                          <span class="p-button-label">Ver Lista</span>
+                        </a>
                       </div>
+
                       <div class="inner-pts">{{ res.total_points }} pts</div>
                     </div>
                   </div>
@@ -213,24 +221,6 @@
         </footer>
       </main>
 
-      <Dialog
-        v-model:visible="showDeckViewModal"
-        :header="`Lista: ${deckViewPlayer}`"
-        modal
-        :style="{ width: '90vw', maxWidth: '500px' }"
-      >
-        <div class="deck-viewer">
-          <pre class="deck-content">{{ deckViewContent }}</pre>
-        </div>
-        <template #footer>
-          <Button
-            label="Fechar"
-            icon="pi pi-times"
-            class="p-button-text"
-            @click="showDeckViewModal = false"
-          />
-        </template>
-      </Dialog>
     </template>
   </div>
 </template>
@@ -249,11 +239,6 @@ const ranking = ref([])
 const tournaments = ref([])
 
 const expandedTournaments = ref({})
-
-// Estado do Deck View Modal
-const showDeckViewModal = ref(false)
-const deckViewPlayer = ref('')
-const deckViewContent = ref('')
 
 onMounted(async () => {
   const leagueId = route.params.id
@@ -277,12 +262,6 @@ onMounted(async () => {
 
 function toggleTournament(id) {
   expandedTournaments.value[id] = !expandedTournaments.value[id]
-}
-
-function openDeckView(playerName, decklist) {
-  deckViewPlayer.value = playerName
-  deckViewContent.value = decklist
-  showDeckViewModal.value = true
 }
 
 function formatDate(dateString) {
@@ -541,26 +520,6 @@ function formatDate(dateString) {
   padding: 0.2rem 0.5rem;
   border-radius: 6px;
   margin-top: 0.1rem;
-}
-
-/* Modal de Decks */
-.deck-viewer {
-  background: #1e1e1e;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 1rem;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.deck-content {
-  margin: 0;
-  color: #d4d4d4;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-wrap: break-word;
 }
 
 .public-footer {

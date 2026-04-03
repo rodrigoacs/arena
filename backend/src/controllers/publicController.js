@@ -4,7 +4,6 @@ export const getPublicLeagueData = async (req, res) => {
   try {
     const { id } = req.params
 
-    // 1. Buscar os detalhes da Liga
     const leagueResult = await query('SELECT id, name, season FROM leagues WHERE id = $1', [id])
 
     if (leagueResult.rows.length === 0) {
@@ -13,7 +12,6 @@ export const getPublicLeagueData = async (req, res) => {
 
     const league = leagueResult.rows[0]
 
-    // 2. Buscar o Ranking
     const rankingSql = `
       SELECT 
         p.id as player_id,
@@ -40,7 +38,6 @@ export const getPublicLeagueData = async (req, res) => {
 
     const rankingResult = await query(rankingSql, [id])
 
-    // 3. NOVO: Buscar os Últimos Torneios com as listas de decks
     const tourneysSql = `
       SELECT 
         t.id, t.name, t.tournament_date, t.status,
@@ -50,6 +47,7 @@ export const getPublicLeagueData = async (req, res) => {
               'player_name', p.name,
               'final_position', tr.final_position,
               'deck_name', tr.deck_name,
+              'deck_url', tr.deck_url,
               'total_points', tr.total_points
             ) ORDER BY tr.final_position ASC
           ) FILTER (WHERE tr.player_id IS NOT NULL), '[]'
