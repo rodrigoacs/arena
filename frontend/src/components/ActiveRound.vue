@@ -22,9 +22,17 @@
         />
       </div>
 
-      <div class="header-titles text-center mt-2">
+      <div class="header-titles text-center mt-2 relative">
         <h2>Rodada {{ currentRound }} de {{ roundCount }}</h2>
         <p>A batalha está rolando. Cuidado com os combos infinitos!</p>
+
+        <Button
+          v-if="canEditPairings"
+          label="Ajustar Mesas Manualmente"
+          icon="pi pi-sliders-h"
+          class="p-button-outlined p-button-sm mt-3"
+          @click="openEditPairings"
+        />
       </div>
 
       <div
@@ -169,6 +177,115 @@
     </Dialog>
 
     <Dialog
+      v-model:visible="showEditPairingsDialog"
+      header="Ajustar Mesas da Rodada"
+      :style="{ width: '95vw', maxWidth: '900px' }"
+      modal
+    >
+      <div class="apple-form-section mt-2">
+        <p class="text-gray-500 text-sm mb-3">Mova os jogadores de lugar livremente. Se selecionar alguém que já está em
+          outra mesa, o sistema fará a troca automaticamente.</p>
+
+        <div
+          class="import-alert mb-4"
+          v-if="manualPairingError"
+        >
+          <i class="pi pi-exclamation-triangle mr-2"></i> {{ manualPairingError }}
+        </div>
+
+        <div class="apple-tables-grid">
+          <div
+            v-for="(table, tIndex) in manualTables"
+            :key="tIndex"
+            class="apple-table-card"
+          >
+            <div class="apple-table-header">
+              <span>MESA {{ tIndex + 1 }}</span>
+              <div class="flex gap-2">
+                <Button
+                  icon="pi pi-user-plus"
+                  class="p-button-text p-button-sm p-0 w-2rem h-2rem text-blue-500"
+                  @click="addManualSlot(tIndex)"
+                  v-tooltip.top="'Adicionar Cadeira'"
+                />
+                <Button
+                  v-if="manualTables.length > 1"
+                  icon="pi pi-times"
+                  class="p-button-text p-button-sm p-0 w-2rem h-2rem text-red-400"
+                  @click="removeManualTable(tIndex)"
+                  v-tooltip.top="'Remover Mesa'"
+                />
+              </div>
+            </div>
+
+            <div class="apple-table-content">
+              <div
+                v-for="(slotId, sIndex) in table.slots"
+                :key="sIndex"
+                class="apple-seat-row"
+              >
+                <i class="pi pi-user text-gray-400"></i>
+                <Dropdown
+                  v-model="table.slots[sIndex]"
+                  :options="players"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Selecionar jogador..."
+                  class="ios-dropdown flex-1"
+                  @change="(e) => handlePlayerMove(tIndex, sIndex, e.value)"
+                >
+                  <template #option="slotProps">
+                    <div class="flex justify-content-between align-items-center w-full">
+                      <span>{{ slotProps.option.name }}</span>
+                      <span
+                        v-if="getPlayerTable(slotProps.option.id)"
+                        class="text-gray-400 text-xs ml-2 font-italic"
+                      >
+                        (Mesa {{ getPlayerTable(slotProps.option.id) }})
+                      </span>
+                    </div>
+                  </template>
+                </Dropdown>
+                <Button
+                  icon="pi pi-minus-circle"
+                  class="ios-delete-btn"
+                  @click="removeManualSlot(tIndex, sIndex)"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-content-center mt-4">
+          <Button
+            label="Adicionar Nova Mesa"
+            icon="pi pi-plus-circle"
+            class="p-button-outlined p-button-secondary p-button-sm"
+            @click="addManualTable"
+          />
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-content-end gap-2 w-full mt-3">
+          <Button
+            label="Cancelar"
+            icon="pi pi-times"
+            class="p-button-text p-button-secondary"
+            @click="showEditPairingsDialog = false"
+          />
+          <Button
+            label="Salvar Mesas"
+            icon="pi pi-check"
+            class="p-button-primary"
+            @click="saveManualPairings"
+            :disabled="!!manualPairingError"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <Dialog
       v-model:visible="showResetConfirmDialog"
       header="Confirmar Retorno"
       :style="{ width: '450px' }"
@@ -213,8 +330,7 @@
           style="font-size: 2.5rem"
         />
         <p class="m-0 text-lg">Confirma o encerramento? Os resultados serão gravados definitivamente na base de dados e
-          no
-          Ranking da Liga.</p>
+          no Ranking da Liga.</p>
       </div>
       <template #footer>
         <div class="flex justify-content-end gap-3 w-full mt-2">
@@ -280,7 +396,7 @@ const router = useRouter()
 const toast = useToast()
 const {
   tableCount, roundCount, players, currentRound, sortedPlayers, currentTables, allResultsRegistered,
-  saveResults, nextRound, endTournament, cancelTournament, clearTournamentState
+  saveResults, nextRound, endTournament, cancelTournament, clearTournamentState, updateCurrentRoundPairings
 } = useTournament()
 
 const showResultDialog = ref(false)
@@ -291,6 +407,96 @@ const showResetConfirmDialog = ref(false)
 const showFinishConfirmDialog = ref(false)
 const showFinalResultsDialog = ref(false)
 const isFinishing = ref(false)
+
+const showEditPairingsDialog = ref(false)
+const manualTables = ref([])
+
+const canEditPairings = computed(() => {
+  return currentTables.value.every(t => t.status === 'pending')
+})
+
+function openEditPairings() {
+  manualTables.value = currentTables.value.map(t => ({
+    slots: t.players.map(p => p.id)
+  }))
+  showEditPairingsDialog.value = true
+}
+
+function addManualTable() { manualTables.value.push({ slots: [null, null, null, null] }) }
+function removeManualTable(tIndex) { manualTables.value.splice(tIndex, 1) }
+function addManualSlot(tIndex) { manualTables.value[tIndex].slots.push(null) }
+function removeManualSlot(tIndex, sIndex) { manualTables.value[tIndex].slots.splice(sIndex, 1) }
+
+function getPlayerTable(playerId) {
+  for (let i = 0; i < manualTables.value.length; i++) {
+    if (manualTables.value[i].slots.includes(playerId)) {
+      return i + 1
+    }
+  }
+  return null
+}
+
+function handlePlayerMove(tIndex, sIndex, newPlayerId) {
+  if (!newPlayerId) return
+
+  manualTables.value.forEach((t, i) => {
+    t.slots.forEach((id, j) => {
+      if ((i !== tIndex || j !== sIndex) && id === newPlayerId) {
+        manualTables.value[i].slots[j] = null
+      }
+    })
+  })
+}
+
+const manualPairingError = computed(() => {
+  let selectedCount = 0
+
+  for (let i = 0; i < manualTables.value.length; i++) {
+    const t = manualTables.value[i]
+    let playersInThisTable = 0
+
+    for (const id of t.slots) {
+      if (id) {
+        selectedCount++
+        playersInThisTable++
+      }
+    }
+
+    if (playersInThisTable === 1) {
+      return `A Mesa ${i + 1} possui apenas 1 jogador. É necessário um mínimo de 2 jogadores.`
+    }
+  }
+
+  if (selectedCount !== players.value.length) {
+    return `Atenção: Você tem ${players.value.length} jogadores no torneio, mas apenas ${selectedCount} estão escalados nas mesas.`
+  }
+
+  return null
+})
+
+function saveManualPairings() {
+  if (manualPairingError.value) return
+
+  const newTables = manualTables.value.map((t, index) => {
+    const tablePlayers = t.slots.filter(id => id).map(id => {
+      const p = players.value.find(x => x.id === id)
+      return { id: p.id, name: p.name, result: null }
+    })
+
+    return {
+      number: 0,
+      status: 'pending',
+      players: tablePlayers
+    }
+  }).filter(t => t.players.length > 0)
+
+  newTables.forEach((t, i) => t.number = i + 1)
+
+  updateCurrentRoundPairings(newTables)
+  showEditPairingsDialog.value = false
+  toast.add({ severity: 'success', summary: 'Mesas Atualizadas', detail: 'O emparceiramento da rodada foi modificado.', life: 3000 })
+}
+
 
 const resultsError = computed(() => {
   if (selectedTable.value === null) return 'Nenhuma mesa selecionada.'
@@ -385,19 +591,16 @@ function generateRandomResults() {
   }
 }
 
-// 1. Botão: "Voltar para Configuração" (Cancela e apaga tudo)
 async function confirmCancel() {
   await cancelTournament()
   showResetConfirmDialog.value = false
   toast.add({ severity: 'info', summary: 'Cancelado', detail: 'O torneio foi abortado e removido do banco.', life: 3000 })
 }
 
-// 2. Botão: "Pausar e Ir para a Liga" (Apenas navega, mantendo em memória)
 function pauseAndGoToLeague() {
   router.push({ name: 'league' })
 }
 
-// 3. Finalização Oficial do Torneio
 async function confirmFinish() {
   if (isFinishing.value) return
   isFinishing.value = true
@@ -417,7 +620,6 @@ async function confirmFinish() {
   isFinishing.value = false
 }
 
-// 4. Fechar Pódio e voltar à Liga
 function finishAndGoToLeague() {
   clearTournamentState()
   router.push({ name: 'league' })
@@ -531,7 +733,6 @@ function finishAndGoToLeague() {
   margin-top: auto;
 }
 
-/* Modals */
 .result-list {
   display: flex;
   flex-direction: column;
@@ -575,7 +776,6 @@ function finishAndGoToLeague() {
   box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
 }
 
-/* Final Podium */
 .final-podium {
   display: flex;
   flex-direction: column;
@@ -624,6 +824,97 @@ function finishAndGoToLeague() {
 .rank-3 {
   background: rgba(180, 83, 9, 0.1);
   border-color: #b45309;
+}
+
+/* EMPARCEIRAMENTO MANUAL CSS (APPLE HIG) */
+.apple-form-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.apple-tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.apple-table-card {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.apple-table-header {
+  background: rgba(0, 0, 0, 0.02);
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.apple-seat-row {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  gap: 0.5rem;
+}
+
+.apple-seat-row:last-child {
+  border-bottom: none;
+}
+
+:deep(.ios-dropdown .p-dropdown-label) {
+  padding: 0.25rem 0.5rem;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+:deep(.ios-dropdown.p-dropdown) {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  width: 100%;
+}
+
+:deep(.ios-dropdown.p-dropdown:not(.p-disabled):hover) {
+  background: transparent;
+}
+
+.ios-delete-btn {
+  color: #ef4444 !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 1.2rem;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ios-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-radius: 50%;
+}
+
+.import-alert {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
 }
 
 @media (max-width: 600px) {

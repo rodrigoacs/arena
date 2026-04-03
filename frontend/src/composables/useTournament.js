@@ -18,7 +18,6 @@ function loadState() {
 
 const initialState = loadState()
 
-// ESTADO GLOBAL
 const activeTournamentId = ref(initialState?.activeTournamentId || null)
 const roundCount = ref(initialState?.roundCount || 3)
 const playersPerTable = ref(initialState?.playersPerTable || 4)
@@ -135,6 +134,12 @@ export function useTournament() {
       }
     }
     rounds.value.push({ number: currentRound.value, tables })
+  }
+
+  function updateCurrentRoundPairings(newTables) {
+    if (rounds.value.length > 0) {
+      rounds.value[currentRound.value - 1].tables = newTables
+    }
   }
 
   async function startTournament() {
@@ -287,6 +292,7 @@ export function useTournament() {
     roundCount, playersPerTable, players, allAdminPlayers, tournamentStarted, activeTournamentId,
     currentRound, rounds, sortedPlayers, currentTables, allResultsRegistered,
     addPlayer, togglePlayer, startTournament, saveResults, nextRound,
-    endTournament, cancelTournament, clearTournamentState, getAveragePosition, revertResults, fetchExistingPlayers
+    endTournament, cancelTournament, clearTournamentState, getAveragePosition, revertResults, fetchExistingPlayers,
+    updateCurrentRoundPairings
   }
 }
