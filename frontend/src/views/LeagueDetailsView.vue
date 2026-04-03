@@ -35,7 +35,7 @@
                 @click="exportCSV"
               />
               <Button
-                label="Copiar Link Público"
+                label="Copiar Link"
                 icon="pi pi-link"
                 class="p-button-outlined p-button-info p-button-sm"
                 @click="copyPublicLink"
@@ -73,38 +73,32 @@
                   </div>
                 </template>
               </Column>
-
               <Column
                 field="player_name"
                 header="Jogador"
                 class="font-bold"
               ></Column>
-
               <Column
                 field="league_points"
                 header="Pts"
                 style="width: 70px"
                 class="text-blue-500 font-bold"
               ></Column>
-
               <Column header="1º">
                 <template #body="slotProps">
                   <span class="text-yellow-500 font-bold">{{ slotProps.data.total_golds }}</span>
                 </template>
               </Column>
-
               <Column header="2º">
                 <template #body="slotProps">
                   <span class="text-gray-400 font-bold">{{ slotProps.data.total_silvers }}</span>
                 </template>
               </Column>
-
               <Column header="3º">
                 <template #body="slotProps">
                   <span class="text-amber-700 font-bold">{{ slotProps.data.total_bronzes }}</span>
                 </template>
               </Column>
-
               <Column
                 field="avg_position"
                 header="Média Pos."
@@ -114,7 +108,6 @@
                   <span class="avg-badge">{{ slotProps.data.avg_position || '-' }}</span>
                 </template>
               </Column>
-
               <Column
                 field="tournaments_played"
                 header="Etapas"
@@ -190,26 +183,25 @@
                       class="inner-pos"
                       :class="`medal-${res.final_position}`"
                     >{{ res.final_position }}º</div>
-
                     <div class="inner-player">
                       <span class="inner-name">{{ res.player_name }}</span>
                       <span
                         v-if="res.deck_name"
-                        class="inner-deck-name"
+                        class="inner-deck-name text-sm text-gray-500 mt-1"
                       >
-                        ({{ res.deck_name }})
+                        <i class="pi pi-id-card mr-1"></i>{{ res.deck_name }}
                       </span>
                       <a
                         v-if="res.deck_url"
                         :href="res.deck_url"
                         target="_blank"
-                        class="inner-deck-link"
+                        class="mt-1 inline-block p-button p-component p-button-text p-button-sm p-0 text-blue-500 hover:text-blue-700"
+                        style="text-decoration: none;"
                       >
-                        <i class="pi pi-external-link"></i>
-                        Ver Lista
+                        <span class="pi pi-external-link mr-1 text-xs"></span>
+                        <span class="p-button-label">Ver Lista</span>
                       </a>
                     </div>
-
                     <div class="inner-pts">{{ res.total_points }} pts</div>
                   </div>
                 </div>
@@ -221,111 +213,55 @@
     </main>
 
     <Dialog
-      v-model:visible="showDeckInputModal"
-      :header="`Comandante - Posição ${currentEditingDeckIndex !== null ? currentEditingDeckIndex + 1 : ''}º`"
-      modal
-      :style="{ width: '90vw', maxWidth: '400px' }"
-    >
-      <div class="p-fluid mt-2 flex flex-column gap-3">
-        <div class="field mb-0">
-          <label class="text-sm font-bold text-gray-700 block mb-2">Nome do Comandante</label>
-          <InputText
-            v-model="tempDeckInfo.name"
-            placeholder="Ex: Atraxa, Praetors' Voice"
-          />
-        </div>
-        <div class="field mb-0">
-          <label class="text-sm font-bold text-gray-700 block mb-2">Link da Lista (Opcional)</label>
-          <InputText
-            v-model="tempDeckInfo.url"
-            placeholder="Link do Moxfield, Archidekt, etc."
-          />
-        </div>
-      </div>
-      <template #footer>
-        <div class="flex justify-content-between w-full mt-3">
-          <Button
-            label="Limpar"
-            icon="pi pi-trash"
-            class="p-button-text p-button-danger"
-            @click="clearTempDeck"
-          />
-          <div class="flex gap-2">
-            <Button
-              label="Cancelar"
-              icon="pi pi-times"
-              class="p-button-text p-button-secondary"
-              @click="showDeckInputModal = false"
-            />
-            <Button
-              label="Confirmar"
-              icon="pi pi-check"
-              class="p-button-primary"
-              @click="saveDeckInput"
-            />
-          </div>
-        </div>
-      </template>
-    </Dialog>
-
-    <Dialog
       v-model:visible="showImportModal"
-      header="Importar Torneio Passado"
-      :style="{ width: '95vw', maxWidth: '1000px' }"
+      header="Reconstruir Torneio Passado"
+      :style="{ width: '95vw', maxWidth: '1200px' }"
       modal
       :closable="!isSaving"
       class="workspace-dialog"
     >
       <div class="import-workspace">
+
         <div class="workspace-sidebar">
-          <div class="info-card">
-            <i class="pi pi-info-circle info-icon"></i>
-            <div class="info-text">
-              <strong>Atenção ao Histórico:</strong>
-              <p>Preencha apenas as posições dos jogadores presentes.</p>
+          <div class="apple-form-section">
+            <div class="apple-section-label">1. DADOS DO EVENTO</div>
+            <div class="apple-form-group">
+              <div class="apple-form-row">
+                <label>NOME DO TORNEIO</label>
+                <InputText
+                  v-model="importData.name"
+                  placeholder="Ex: Etapa Inverno 2026"
+                  class="ios-input"
+                />
+              </div>
+              <div class="apple-form-row">
+                <label>DATA DE REALIZAÇÃO</label>
+                <InputText
+                  type="date"
+                  v-model="importData.date"
+                  class="ios-input"
+                />
+              </div>
             </div>
           </div>
 
-          <div class="control-panel">
-            <h3 class="panel-title">1. Dados do Evento</h3>
-            <div class="field w-full mb-3">
-              <label class="font-bold text-sm block mb-2">Nome do Torneio</label>
-              <InputText
-                v-model="importData.name"
-                placeholder="Ex: Etapa Inverno 2025"
-                class="w-full"
-              />
-            </div>
-            <div class="field w-full mb-4">
-              <label class="font-bold text-sm block mb-2">Data Realizado</label>
-              <InputText
-                type="date"
-                v-model="importData.date"
-                class="w-full"
-              />
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="quick-add-header">
-              <h3 class="panel-title m-0">2. Faltou alguém?</h3>
-              <p class="text-sm text-gray-500 mt-1 mb-3">Escale um novato aqui.</p>
-            </div>
-
-            <div class="flex flex-column gap-2">
+          <div class="apple-form-section mt-5">
+            <div class="apple-section-label">2. NOVO JOGADOR</div>
+            <div class="apple-section-desc">Cadastre rapidamente para que ele apareça nas mesas ao lado.</div>
+            <div class="apple-form-group flex align-items-center pr-2">
               <InputText
                 v-model="quickPlayerName"
                 placeholder="Nome completo..."
                 @keydown.enter="handleQuickAddPlayer"
-                class="w-full"
+                class="ios-input flex-1 ml-3 my-2"
               />
               <Button
-                icon="pi pi-user-plus"
-                label="Cadastrar e Escalar"
-                class="p-button-secondary w-full"
+                icon="pi pi-plus-circle"
+                class="p-button-rounded p-button-text p-button-primary m-0 w-2rem h-2rem flex-shrink-0"
                 @click="handleQuickAddPlayer"
                 :loading="isCreatingPlayer"
                 :disabled="!quickPlayerName"
+                v-tooltip.top="'Adicionar Jogador'"
               />
             </div>
           </div>
@@ -333,60 +269,144 @@
 
         <div class="workspace-main">
           <div class="main-header">
-            <h3 class="panel-title m-0">3. Classificação Final</h3>
+            <div class="header-text">
+              <h3 class="panel-title m-0">3. Rodadas e Mesas</h3>
+              <p class="text-sm text-gray-500 m-0 mt-1">Deixe em branco os lugares ou mesas que não foram utilizados.
+              </p>
+            </div>
             <Button
-              label="Mais Posições"
+              label="Nova Rodada"
               icon="pi pi-plus"
-              class="p-button-outlined p-button-sm"
-              @click="addPlacement"
+              class="p-button-primary p-button-sm ios-shadow"
+              @click="addRound"
             />
           </div>
 
           <div class="placements-list-container">
-            <div class="placements-grid">
-              <div
-                v-for="(placement, index) in importData.placements"
-                :key="index"
-                class="placement-card"
-              >
+            <div
+              class="import-alert mb-4"
+              v-if="importError"
+            >
+              <i class="pi pi-exclamation-triangle mr-2"></i> {{ importError }}
+            </div>
+
+            <div
+              v-for="(round, rIndex) in importData.rounds"
+              :key="round.id"
+              class="apple-round-container"
+            >
+              <div class="apple-section-label flex justify-content-between align-items-center">
+                <span>RODADA {{ rIndex + 1 }}</span>
+                <Button
+                  v-if="importData.rounds.length > 1"
+                  icon="pi pi-trash"
+                  class="p-button-rounded p-button-danger p-button-text p-button-sm p-0 w-2rem h-2rem"
+                  @click="removeRound(rIndex)"
+                  v-tooltip.left="'Excluir Rodada'"
+                />
+              </div>
+
+              <div class="apple-tables-grid">
                 <div
-                  class="placement-medal"
-                  :class="getMedalClass(placement.position)"
+                  v-for="(table, tIndex) in round.tables"
+                  :key="table.id"
+                  class="apple-table-card"
                 >
-                  {{ placement.position }}º
-                </div>
+                  <div class="apple-table-header">
+                    <span>MESA {{ tIndex + 1 }}</span>
+                    <div class="flex gap-2">
+                      <Button
+                        label="Jogador"
+                        icon="pi pi-user-plus"
+                        class="p-button-text p-button-sm p-0 text-blue-500 font-normal"
+                        @click="addSeat(rIndex, tIndex)"
+                      />
+                      <Button
+                        v-if="round.tables.length > 1"
+                        icon="pi pi-times"
+                        class="p-button-rounded p-button-danger p-button-text p-0 w-1rem h-1rem ml-2"
+                        @click="removeTable(rIndex, tIndex)"
+                        v-tooltip.top="'Remover Mesa'"
+                      />
+                    </div>
+                  </div>
 
-                <div class="placement-input-area flex align-items-center gap-2 w-full">
-                  <Dropdown
-                    v-model="placement.player_id"
-                    :options="allPlayers"
-                    optionLabel="name"
-                    optionValue="id"
-                    filter
-                    showClear
-                    placeholder="Selecione o jogador..."
-                    emptyFilterMessage="Sem jogadores."
-                    class="workspace-dropdown flex-1"
-                  />
-                  <Button
-                    icon="pi pi-list"
-                    class="p-button-rounded p-button-sm flex-shrink-0"
-                    :class="(placement.deck_name || placement.deck_url) ? 'p-button-success' : 'p-button-secondary p-button-outlined'"
-                    @click="openDeckInput(index)"
-                    v-tooltip="(placement.deck_name || placement.deck_url) ? 'Editar Comandante' : 'Adicionar Comandante'"
-                  />
+                  <div class="apple-table-content">
+                    <div
+                      v-for="(seat, sIndex) in table.seats"
+                      :key="sIndex"
+                      class="apple-seat-row"
+                    >
+                      <div
+                        class="seat-medal"
+                        :class="`pos-${seat.pos}`"
+                      >{{ seat.pos }}º</div>
+                      <Dropdown
+                        v-model="seat.player_id"
+                        :options="getAvailablePlayers(rIndex, seat.player_id)"
+                        optionLabel="name"
+                        optionValue="id"
+                        filter
+                        showClear
+                        placeholder="Selecionar jogador..."
+                        class="ios-dropdown flex-1"
+                      />
+                      <Button
+                        v-if="table.seats.length > 2"
+                        icon="pi pi-minus-circle"
+                        class="ios-delete-btn"
+                        @click="removeSeat(rIndex, tIndex, sIndex)"
+                        tabindex="-1"
+                      />
+                    </div>
+                  </div>
                 </div>
+              </div>
 
-                <div class="placement-actions">
-                  <Button
-                    icon="pi pi-trash"
-                    class="p-button-rounded p-button-danger p-button-text p-button-sm action-icon ml-2"
-                    @click="removePlacement(index)"
-                    v-tooltip="'Remover Posição'"
-                  />
+              <div class="flex justify-content-start mt-3 mb-5">
+                <Button
+                  label="Nova Mesa"
+                  icon="pi pi-plus-circle"
+                  class="p-button-text p-button-sm text-blue-500 font-bold"
+                  @click="addTable(rIndex)"
+                />
+              </div>
+            </div>
+
+            <div
+              v-if="uniquePlayersInImport.length > 0"
+              class="apple-form-section border-top-1 surface-border pt-4 mt-2"
+            >
+              <div class="apple-section-label">4. COMANDANTES (OPCIONAL)</div>
+              <div class="apple-section-desc">Insira o deck dos jogadores para o metagame.</div>
+
+              <div class="apple-form-group">
+                <div
+                  v-for="player in uniquePlayersInImport"
+                  :key="player.id"
+                  class="apple-form-row ios-deck-row"
+                >
+                  <div class="ios-deck-player">
+                    <i class="pi pi-user text-gray-400"></i>
+                    <span class="font-bold text-sm">{{ player.name }}</span>
+                  </div>
+                  <div class="ios-deck-inputs">
+                    <InputText
+                      v-model="importDecks[player.id].name"
+                      placeholder="Nome do Comandante"
+                      class="ios-input"
+                    />
+                    <div class="ios-divider"></div>
+                    <InputText
+                      v-model="importDecks[player.id].url"
+                      placeholder="Link da Lista"
+                      class="ios-input"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -401,12 +421,12 @@
             :disabled="isSaving"
           />
           <Button
-            label="Gravar no Histórico"
-            icon="pi pi-save"
+            label="Calcular Ranking e Salvar"
+            icon="pi pi-check"
             @click="handleImport"
             :loading="isSaving"
             :disabled="!isImportValid"
-            class="p-button-primary p-button-lg ml-3"
+            class="p-button-primary p-button-lg ml-3 ios-shadow"
           />
         </div>
       </template>
@@ -430,22 +450,19 @@ const isLoading = ref(true)
 
 const showImportModal = ref(false)
 const isSaving = ref(false)
+const importError = ref('')
 
 const quickPlayerName = ref('')
 const isCreatingPlayer = ref(false)
-
 const expandedTournaments = ref({})
-
-// Estado da Edição do Deck (Modal de Input)
-const showDeckInputModal = ref(false)
-const currentEditingDeckIndex = ref(null)
-const tempDeckInfo = ref({ name: '', url: '' })
 
 const importData = ref({
   name: '',
   date: new Date().toISOString().split('T')[0],
-  placements: []
+  rounds: []
 })
+
+const importDecks = ref({})
 
 onMounted(async () => {
   await loadDashboardData()
@@ -469,83 +486,218 @@ async function loadDashboardData() {
   }
 }
 
-function toggleTournament(id) {
-  expandedTournaments.value[id] = !expandedTournaments.value[id]
+function getInitialTables() {
+  return Array.from({ length: 4 }, (_, i) => ({
+    id: Date.now() + i + 1,
+    seats: [
+      { pos: 1, player_id: null },
+      { pos: 2, player_id: null },
+      { pos: 3, player_id: null },
+      { pos: 4, player_id: null }
+    ]
+  }))
 }
 
-function openDeckInput(index) {
-  currentEditingDeckIndex.value = index
-  tempDeckInfo.value = {
-    name: importData.value.placements[index].deck_name || '',
-    url: importData.value.placements[index].deck_url || ''
-  }
-  showDeckInputModal.value = true
-}
-
-function clearTempDeck() {
-  tempDeckInfo.value = { name: '', url: '' }
-}
-
-function saveDeckInput() {
-  if (currentEditingDeckIndex.value !== null) {
-    importData.value.placements[currentEditingDeckIndex.value].deck_name = tempDeckInfo.value.name.trim()
-    importData.value.placements[currentEditingDeckIndex.value].deck_url = tempDeckInfo.value.url.trim()
-  }
-  showDeckInputModal.value = false
-  toast.add({ severity: 'success', summary: 'Comandante Salvo', detail: 'Adicionado à posição.', life: 2000 })
-}
-
-function goBack() {
-  router.push({ name: 'dashboard' })
-}
-
-function goToTournament() {
-  router.push({ name: 'tournament' })
-}
-
-function formatDate(dateString) {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' })
-}
-
-function formatStatus(status) {
-  const map = {
-    'active': 'Ao Vivo',
-    'finished': 'Finalizado',
-    'imported': 'Importado',
-    'pending': 'Pendente'
-  }
-  return map[status] || status
-}
-
-function getMedalClass(pos) {
-  if (pos === 1) return 'medal-1'
-  if (pos === 2) return 'medal-2'
-  if (pos === 3) return 'medal-3'
-  return 'medal-other'
-}
-
-function openImportModal() {
+function initImportData() {
   importData.value = {
     name: '',
     date: new Date().toISOString().split('T')[0],
-    placements: Array.from({ length: 16 }, (_, i) => ({ position: i + 1, player_id: null, deck_name: '', deck_url: '' }))
+    rounds: [{
+      id: Date.now(),
+      tables: getInitialTables()
+    }]
   }
+  importDecks.value = {}
   quickPlayerName.value = ''
+  importError.value = ''
+}
+
+function openImportModal() {
+  initImportData()
   showImportModal.value = true
 }
 
-function addPlacement() {
-  const nextPos = importData.value.placements.length + 1
-  importData.value.placements.push({ position: nextPos, player_id: null, deck_name: '', deck_url: '' })
+function addRound() {
+  importData.value.rounds.push({
+    id: Date.now(),
+    tables: getInitialTables()
+  })
 }
 
-function removePlacement(index) {
-  importData.value.placements.splice(index, 1)
-  importData.value.placements.forEach((p, i) => {
-    p.position = i + 1
+function removeRound(rIndex) {
+  importData.value.rounds.splice(rIndex, 1)
+}
+
+function addTable(rIndex) {
+  importData.value.rounds[rIndex].tables.push({
+    id: Date.now(),
+    seats: [
+      { pos: 1, player_id: null },
+      { pos: 2, player_id: null },
+      { pos: 3, player_id: null },
+      { pos: 4, player_id: null }
+    ]
   })
+}
+
+function removeTable(rIndex, tIndex) {
+  importData.value.rounds[rIndex].tables.splice(tIndex, 1)
+}
+
+function addSeat(rIndex, tIndex) {
+  const table = importData.value.rounds[rIndex].tables[tIndex]
+  table.seats.push({ pos: table.seats.length + 1, player_id: null })
+}
+
+function removeSeat(rIndex, tIndex, sIndex) {
+  const table = importData.value.rounds[rIndex].tables[tIndex]
+  table.seats.splice(sIndex, 1)
+  table.seats.forEach((seat, idx) => { seat.pos = idx + 1 })
+}
+
+function getAvailablePlayers(rIndex, currentSeatPlayerId) {
+  const selectedInRound = new Set()
+  const round = importData.value.rounds[rIndex]
+
+  if (round) {
+    round.tables.forEach(t => {
+      t.seats.forEach(s => {
+        if (s.player_id) selectedInRound.add(s.player_id)
+      })
+    })
+  }
+
+  return allPlayers.value.filter(p => {
+    if (p.id === currentSeatPlayerId) return true
+    return !selectedInRound.has(p.id)
+  })
+}
+
+const uniquePlayersInImport = computed(() => {
+  const uniqueIds = new Set()
+  const playersList = []
+
+  importData.value.rounds.forEach(r => {
+    r.tables.forEach(t => {
+      t.seats.forEach(s => {
+        if (s.player_id && !uniqueIds.has(s.player_id)) {
+          uniqueIds.add(s.player_id)
+          const playerObj = allPlayers.value.find(p => p.id === s.player_id)
+          if (playerObj) {
+            playersList.push(playerObj)
+            if (!importDecks.value[s.player_id]) {
+              importDecks.value[s.player_id] = { name: '', url: '' }
+            }
+          }
+        }
+      })
+    })
+  })
+  return playersList
+})
+
+const isImportValid = computed(() => {
+  importError.value = ''
+
+  if (!importData.value.name.trim()) return false
+  if (!importData.value.date) return false
+  if (importData.value.rounds.length === 0) return false
+
+  let hasAtLeastOnePlayer = false
+
+  for (const [rIndex, round] of importData.value.rounds.entries()) {
+    const playersInRound = new Set()
+
+    for (const [tIndex, table] of round.tables.entries()) {
+      let playersInThisTable = 0
+
+      for (const seat of table.seats) {
+        if (seat.player_id) {
+          hasAtLeastOnePlayer = true
+          playersInThisTable++
+
+          if (playersInRound.has(seat.player_id)) {
+            const p = allPlayers.value.find(x => x.id === seat.player_id)
+            importError.value = `O jogador ${p?.name || ''} está escalado mais de uma vez na Rodada ${rIndex + 1}.`
+            return false
+          }
+          playersInRound.add(seat.player_id)
+        }
+      }
+
+      if (playersInThisTable === 1) {
+        importError.value = `A Mesa ${tIndex + 1} da Rodada ${rIndex + 1} tem apenas 1 jogador preenchido. Mesas ativas exigem no mínimo 2 jogadores (ou deixe a mesa toda em branco).`
+        return false
+      }
+    }
+  }
+
+  return hasAtLeastOnePlayer
+})
+
+async function handleImport() {
+  isSaving.value = true
+  try {
+    const playerStats = {}
+
+    importData.value.rounds.forEach(round => {
+      round.tables.forEach(table => {
+        table.seats.forEach(seat => {
+          if (!seat.player_id) return
+
+          const pid = seat.player_id
+          if (!playerStats[pid]) {
+            playerStats[pid] = { points: 0, golds: 0, silvers: 0, bronzes: 0, positionsSum: 0, matchCount: 0 }
+          }
+
+          playerStats[pid].matchCount++
+          playerStats[pid].positionsSum += seat.pos
+
+          if (seat.pos === 1) { playerStats[pid].points += 3; playerStats[pid].golds++ }
+          if (seat.pos === 2) { playerStats[pid].points += 2; playerStats[pid].silvers++ }
+          if (seat.pos === 3) { playerStats[pid].points += 1; playerStats[pid].bronzes++ }
+        })
+      })
+    })
+
+    const sortedPlayers = Object.keys(playerStats).map(pid => {
+      const s = playerStats[pid]
+      return {
+        player_id: pid,
+        ...s,
+        avg_position: s.positionsSum / s.matchCount
+      }
+    }).sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points
+      if (b.golds !== a.golds) return b.golds - a.golds
+      if (b.silvers !== a.silvers) return b.silvers - a.silvers
+      if (b.bronzes !== a.bronzes) return b.bronzes - a.bronzes
+      if (a.avg_position !== b.avg_position) return a.avg_position - b.avg_position
+      return 0
+    })
+
+    const resultsPayload = sortedPlayers.map((p, index) => ({
+      player_id: p.player_id,
+      final_position: index + 1,
+      total_points: p.points,
+      golds: p.golds,
+      silvers: p.silvers,
+      bronzes: p.bronzes,
+      deck_name: importDecks.value[p.player_id]?.name || null,
+      deck_url: importDecks.value[p.player_id]?.url || null
+    }))
+
+    const tourney = await api.createTournament(importData.value.name, importData.value.date, 'imported')
+    await api.saveResults(tourney.id, resultsPayload)
+
+    toast.add({ severity: 'success', summary: 'Histórico Reconstruído', detail: 'O ranking foi processado com sucesso!', life: 4000 })
+    showImportModal.value = false
+    await loadDashboardData()
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Ocorreu um erro ao salvar o torneio.', life: 4000 })
+  } finally {
+    isSaving.value = false
+  }
 }
 
 async function handleQuickAddPlayer() {
@@ -554,114 +706,41 @@ async function handleQuickAddPlayer() {
   try {
     const newPlayer = await api.createPlayer(quickPlayerName.value.trim())
     allPlayers.value.push(newPlayer)
-
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: `${newPlayer.name} pronto para ser escalado.`, life: 3000 })
-
-    const emptySlot = importData.value.placements.find(p => !p.player_id)
-    if (emptySlot) {
-      emptySlot.player_id = newPlayer.id
-    }
-
+    toast.add({ severity: 'success', summary: 'Cadastrado', detail: `${newPlayer.name} pronto para jogar.`, life: 3000 })
     quickPlayerName.value = ''
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao criar. Verifique se o nome não é duplicado.', life: 4000 })
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Nome duplicado ou falha na rede.', life: 4000 })
   } finally {
     isCreatingPlayer.value = false
   }
 }
 
-const isImportValid = computed(() => {
-  const hasName = importData.value.name.trim().length > 0
-  const hasDate = !!importData.value.date
-  const hasValidPlacements = importData.value.placements.some(p => p.player_id)
-
-  const selectedIds = importData.value.placements.map(p => p.player_id).filter(id => id)
-  const hasDuplicates = new Set(selectedIds).size !== selectedIds.length
-
-  return hasName && hasDate && hasValidPlacements && !hasDuplicates
-})
-
-function getPointsForPosition(position) {
-  if (position === 1) return 3
-  if (position === 2) return 2
-  if (position === 3) return 1
-  return 0
-}
-
-async function handleImport() {
-  isSaving.value = true
-  try {
-    const tourney = await api.createTournament(importData.value.name, importData.value.date, 'imported')
-
-    const results = importData.value.placements
-      .filter(p => p.player_id)
-      .map(p => ({
-        player_id: p.player_id,
-        final_position: p.position,
-        total_points: getPointsForPosition(p.position),
-        golds: p.position === 1 ? 1 : 0,
-        silvers: p.position === 2 ? 1 : 0,
-        bronzes: p.position === 3 ? 1 : 0,
-        deck_name: p.deck_name || null,
-        deck_url: p.deck_url || null
-      }))
-
-    await api.saveResults(tourney.id, results)
-
-    toast.add({ severity: 'success', summary: 'Histórico Salvo', detail: 'O torneio foi importado e o ranking atualizado!', life: 4000 })
-    showImportModal.value = false
-    await loadDashboardData()
-  } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erro de Importação', detail: 'Ocorreu um erro ao salvar o histórico.', life: 4000 })
-  } finally {
-    isSaving.value = false
-  }
+function toggleTournament(id) { expandedTournaments.value[id] = !expandedTournaments.value[id] }
+function goBack() { router.push({ name: 'dashboard' }) }
+function goToTournament() { router.push({ name: 'tournament' }) }
+function formatDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '' }
+function formatStatus(status) {
+  const m = { 'active': 'Ao Vivo', 'finished': 'Finalizado', 'imported': 'Importado', 'pending': 'Pendente' }
+  return m[status] || status
 }
 
 function copyPublicLink() {
-  const leagueId = api.getLeagueId()
-  const url = `${window.location.origin}/l/${leagueId}`
-
+  const url = `${window.location.origin}/l/${api.getLeagueId()}`
   navigator.clipboard.writeText(url).then(() => {
-    toast.add({ severity: 'info', summary: 'Link Copiado!', detail: 'Envie para a galera no WhatsApp.', life: 3000 })
-  }).catch(() => {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao copiar o link.', life: 3000 })
+    toast.add({ severity: 'info', summary: 'Link Copiado!', detail: 'Envie para a galera.', life: 3000 })
   })
 }
 
 function exportCSV() {
-  if (!ranking.value || ranking.value.length === 0) {
-    toast.add({ severity: 'warn', summary: 'Aviso', detail: 'Não há dados para exportar.', life: 3000 })
-    return
-  }
-
-  let csvContent = "data:text/csv;charset=utf-8,"
-  csvContent += "Posição,Jogador,Pontos,1º Lugar,2º Lugar,3º Lugar,Média de Posição,Etapas Jogadas\n"
-
-  ranking.value.forEach((row, index) => {
-    const pos = index + 1
-    const rowData = [
-      pos,
-      `"${row.player_name}"`,
-      row.league_points,
-      row.total_golds,
-      row.total_silvers,
-      row.total_bronzes,
-      row.avg_position || '-',
-      row.tournaments_played
-    ]
-    csvContent += rowData.join(",") + "\n"
+  if (!ranking.value || ranking.value.length === 0) return
+  let csvContent = "data:text/csv;charset=utf-8,Posição,Jogador,Pontos,1º Lugar,2º Lugar,3º Lugar,Média de Posição,Etapas Jogadas\n"
+  ranking.value.forEach((row, i) => {
+    csvContent += `${i + 1},"${row.player_name}",${row.league_points},${row.total_golds},${row.total_silvers},${row.total_bronzes},${row.avg_position || '-'},${row.tournaments_played}\n`
   })
-
-  const encodedUri = encodeURI(csvContent)
   const link = document.createElement("a")
-  link.setAttribute("href", encodedUri)
-  link.setAttribute("download", `ranking_liga_${new Date().toISOString().split('T')[0]}.csv`)
-  document.body.appendChild(link)
+  link.href = encodeURI(csvContent)
+  link.download = `ranking_liga_${new Date().toISOString().split('T')[0]}.csv`
   link.click()
-  document.body.removeChild(link)
-
-  toast.add({ severity: 'success', summary: 'Download Iniciado', detail: 'Arquivo CSV gerado com sucesso.', life: 3000 })
 }
 </script>
 
@@ -671,6 +750,7 @@ function exportCSV() {
 .league-details-page {
   min-height: 100vh;
   background-color: var(--bg-primary);
+  padding-bottom: 50px;
 }
 
 .dashboard-header {
@@ -703,11 +783,6 @@ function exportCSV() {
   font-weight: 800;
 }
 
-.action-btn {
-  font-weight: 700;
-  border-radius: 8px;
-}
-
 .dashboard-main {
   max-width: 1400px;
   margin: 0 auto;
@@ -718,6 +793,12 @@ function exportCSV() {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 2.5rem;
+}
+
+@media (max-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .section-header {
@@ -741,6 +822,18 @@ function exportCSV() {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
+.rank-position {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-weight: 800;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.pos-1 {
+  color: #f59e0b;
+  font-size: 1.25rem;
+}
+
 .avg-badge {
   background: rgba(59, 130, 246, 0.1);
   color: #3b82f6;
@@ -750,28 +843,6 @@ function exportCSV() {
   border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
-.rank-position {
-  font-family: 'JetBrains Mono', monospace !important;
-  font-weight: 800;
-  color: var(--text-secondary);
-  font-size: 1.1rem;
-  letter-spacing: -0.5px;
-}
-
-.pos-1 {
-  color: #f59e0b;
-  font-size: 1.25rem;
-}
-
-.pos-2 {
-  color: #94a3b8;
-}
-
-.pos-3 {
-  color: #b45309;
-}
-
-/* Torneios - Cartão Expansível */
 .tournaments-list {
   display: flex;
   flex-direction: column;
@@ -818,16 +889,6 @@ function exportCSV() {
   color: var(--text-secondary);
 }
 
-.expand-icon i {
-  color: var(--text-secondary);
-  font-size: 1.1rem;
-  transition: color 0.2s;
-}
-
-.tournament-card:hover .expand-icon i {
-  color: var(--accent-primary);
-}
-
 .status-badge {
   padding: 0.2rem 0.6rem;
   border-radius: 6px;
@@ -846,26 +907,10 @@ function exportCSV() {
   color: #8b5cf6;
 }
 
-.status-badge.active {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-}
-
-.status-badge.pending {
-  background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
-}
-
 .tourney-details-body {
   background: var(--bg-primary);
   border-top: 1px dashed var(--border-color);
   padding: 1rem;
-}
-
-.results-inner-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
 }
 
 .result-inner-row {
@@ -876,6 +921,7 @@ function exportCSV() {
   border-radius: 8px;
   border: 1px solid var(--border-color);
   gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .inner-pos {
@@ -920,7 +966,6 @@ function exportCSV() {
   margin-top: 0.1rem;
 }
 
-/* Workspace Importação */
 :deep(.workspace-dialog .p-dialog-content) {
   padding: 0;
   overflow: hidden;
@@ -929,71 +974,110 @@ function exportCSV() {
 .import-workspace {
   display: flex;
   flex-direction: row;
-  height: 70vh;
-  min-height: 550px;
+  height: 85vh;
+  min-height: 600px;
   background: var(--bg-primary);
 }
 
 .workspace-sidebar {
-  width: 360px;
+  width: 350px;
   flex-shrink: 0;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border-right: 1px solid var(--border-color);
   padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
   overflow-y: auto;
 }
 
-.info-card {
+.apple-form-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.apple-section-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  padding-left: 1rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.apple-section-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  padding-left: 1rem;
+  line-height: 1.3;
+}
+
+.apple-form-group {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.apple-form-row {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.apple-form-row:last-child {
+  border-bottom: none;
+}
+
+.apple-form-row label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.ios-input {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: 1rem !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+
+.ios-input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.ios-tip {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
-  background: rgba(59, 130, 246, 0.05);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  gap: 0.75rem;
   padding: 1rem;
-  border-radius: 12px;
-  margin-bottom: 2rem;
-}
-
-.info-icon {
-  color: #3b82f6;
-  font-size: 1.25rem;
-  margin-top: 0.15rem;
-}
-
-.info-text strong {
-  color: var(--text-primary);
-  display: block;
-  margin-bottom: 0.25rem;
-  font-size: 0.95rem;
-}
-
-.info-text p {
-  margin: 0;
-  font-size: 0.85rem;
   color: var(--text-secondary);
+  font-size: 0.85rem;
   line-height: 1.4;
 }
 
-.control-panel {
-  flex: 1;
+.ios-tip i {
+  color: var(--accent-primary);
+  font-size: 1.25rem;
+  margin-top: 0.1rem;
+}
+
+.ios-tip p {
+  margin: 0;
 }
 
 .panel-title {
-  font-size: 1.05rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--text-primary);
   margin-top: 0;
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.divider {
-  height: 1px;
-  background: var(--border-color);
-  margin: 2rem 0;
+  margin-bottom: 0;
+  letter-spacing: -0.5px;
 }
 
 .workspace-main {
@@ -1010,7 +1094,7 @@ function exportCSV() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
 }
 
 .placements-list-container {
@@ -1019,15 +1103,9 @@ function exportCSV() {
   padding: 1.5rem;
 }
 
-.placements-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem 1.5rem;
-}
-
 .placements-list-container::-webkit-scrollbar,
 .workspace-sidebar::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .placements-list-container::-webkit-scrollbar-thumb,
@@ -1036,82 +1114,150 @@ function exportCSV() {
   border-radius: 10px;
 }
 
-.placement-card {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.apple-round-container {
+  margin-bottom: 2rem;
+}
+
+.apple-tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.apple-table-card {
   background: var(--bg-secondary);
+  border-radius: 12px;
   border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
 }
 
-.placement-card:hover {
-  border-color: var(--text-secondary);
+.apple-table-header {
+  background: var(--bg-secondary);
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.placement-medal {
-  width: 42px;
-  height: 42px;
+.apple-seat-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  gap: 0.5rem;
+}
+
+.apple-seat-row:last-child {
+  border-bottom: none;
+}
+
+.seat-medal {
+  font-family: 'JetBrains Mono', monospace;
   font-weight: 800;
   font-size: 1.1rem;
-  flex-shrink: 0;
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  width: 30px;
 }
 
-.placement-medal.medal-1 {
-  background: rgba(245, 158, 11, 0.15);
-  border-color: #f59e0b;
+.seat-medal.pos-1 {
+  color: #f59e0b;
+}
+
+.seat-medal.pos-2 {
+  color: #94a3b8;
+}
+
+.seat-medal.pos-3 {
   color: #b45309;
 }
 
-.placement-medal.medal-2 {
-  background: rgba(148, 163, 184, 0.15);
-  border-color: #94a3b8;
-  color: #475569;
+.seat-medal.pos-other {
+  color: var(--text-tertiary);
 }
 
-.placement-medal.medal-3 {
-  background: rgba(180, 83, 9, 0.15);
-  border-color: #b45309;
-  color: #92400e;
+:deep(.ios-dropdown .p-dropdown-label) {
+  padding: 0.25rem 0.5rem;
+  font-size: 1rem;
+  color: var(--text-primary);
 }
 
-.placement-medal.medal-other {
-  opacity: 0.8;
-}
-
-.placement-input-area {
-  flex: 1;
-  min-width: 0;
-}
-
-.workspace-dropdown {
-  width: 100%;
+:deep(.ios-dropdown.p-dropdown) {
   border: none;
   background: transparent;
   box-shadow: none;
+  width: 100%;
 }
 
-.workspace-dropdown:hover,
-.workspace-dropdown:focus {
-  border: none;
-  box-shadow: none;
+:deep(.ios-dropdown.p-dropdown:not(.p-disabled):hover) {
+  background: transparent;
 }
 
-.action-icon {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  padding: 0 !important;
+.ios-delete-btn {
+  color: #ef4444 !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 1.2rem;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ios-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-radius: 50%;
+}
+
+.ios-deck-row {
+  padding: 1rem;
+}
+
+.ios-deck-player {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.ios-deck-inputs {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.ios-deck-inputs .ios-input {
+  padding: 0.75rem 1rem !important;
+}
+
+.ios-divider {
+  height: 1px;
+  background: var(--border-color);
+  width: 100%;
+}
+
+.import-alert {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.ios-shadow {
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .workspace-footer {
@@ -1123,16 +1269,10 @@ function exportCSV() {
 }
 
 @media (max-width: 1024px) {
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 850px) {
   .import-workspace {
     flex-direction: column;
     height: auto;
-    max-height: 80vh;
+    max-height: 85vh;
   }
 
   .workspace-sidebar {
@@ -1147,19 +1287,11 @@ function exportCSV() {
   }
 
   .placements-list-container {
-    max-height: 40vh;
+    max-height: 50vh;
   }
-}
 
-@media (max-width: 768px) {
-  .placements-grid {
+  .apple-tables-grid {
     grid-template-columns: 1fr;
-  }
-
-  .section-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
   }
 }
 
