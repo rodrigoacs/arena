@@ -27,7 +27,7 @@
           class="ios-btn ios-btn-primary py-2 px-3 text-sm"
           @click="goToTournament"
         >
-          <i class="pi pi-play"></i> Nova Torneio
+          <i class="pi pi-play"></i> Novo Torneio
         </button>
       </div>
     </header>
