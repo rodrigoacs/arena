@@ -1,211 +1,156 @@
 <template>
   <div class="public-league-page">
-
     <div
       v-if="isLoading"
-      class="loading-container"
+      class="flex flex-column align-items-center justify-content-center h-screen text-gray-500"
     >
-      <i
-        class="pi pi-spin pi-spinner"
-        style="font-size: 3rem; color: var(--accent-primary)"
-      ></i>
+      <i class="pi pi-spin pi-spinner text-4xl text-blue-500 mb-3"></i>
       <p>A carregar o campo de batalha...</p>
     </div>
 
     <div
       v-else-if="error"
-      class="error-container"
+      class="flex flex-column align-items-center justify-content-center h-screen text-gray-500"
     >
-      <i class="pi pi-exclamation-triangle"></i>
-      <h2>{{ error }}</h2>
+      <i class="pi pi-exclamation-triangle text-red-500 text-5xl mb-3"></i>
+      <h2 class="text-xl font-bold">{{ error }}</h2>
       <p>Verifique se o link está correto.</p>
     </div>
 
     <template v-else>
-      <header class="public-header">
-        <div class="header-content">
-          <div class="logo-area">
-            <div class="logo-circle">
-              <i class="pi pi-bolt logo-icon"></i>
-            </div>
-            <div>
-              <h1>{{ league.name }}</h1>
-              <span
-                v-if="league.season"
-                class="season-badge"
-              >Temporada {{ league.season }}</span>
-            </div>
-          </div>
-        </div>
+      <header class="ios-page-header px-4 pt-5 pb-3 text-center border-bottom-1 surface-border bg-white">
+        <i class="pi pi-bolt text-blue-500 text-4xl mb-2"></i>
+        <h1 class="ios-large-title text-center m-0">{{ league.name }}</h1>
+        <span
+          v-if="league.season"
+          class="text-gray-500 text-sm font-medium mt-1"
+        >Temporada {{ league.season }}</span>
       </header>
 
-      <main class="public-main">
-        <div class="content-grid">
+      <main
+        class="max-w-content px-3 py-4"
+        style="max-width: 900px; margin: 0 auto;"
+      >
 
-          <div class="ranking-card card">
-            <div class="card-header">
-              <h2>🏆 Classificação Oficial</h2>
-              <p>Atualizado em tempo real</p>
-            </div>
-
-            <div class="apple-list-card">
-              <div
-                v-if="ranking.length === 0"
-                class="p-4 text-center text-gray-500"
-              >
-                Nenhuma batalha foi travada nesta liga ainda.
-              </div>
-
-              <div
-                class="table-responsive"
-                v-else
-              >
-                <table class="ios-table">
-                  <thead>
-                    <tr>
-                      <th style="width: 70px; text-align: center;">Pos</th>
-                      <th>Comandante</th>
-                      <th style="width: 90px; text-align: center;">Pontos</th>
-                      <th
-                        style="text-align: center;"
-                        title="1º Lugares"
-                      >1º</th>
-                      <th
-                        style="text-align: center;"
-                        title="2º Lugares"
-                      >2º</th>
-                      <th
-                        style="text-align: center;"
-                        title="3º Lugares"
-                      >3º</th>
-                      <th style="width: 100px; text-align: center;">Média</th>
-                      <th style="width: 80px; text-align: center;">Jogos</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(row, index) in ranking"
-                      :key="row.player_name"
-                    >
-                      <td style="text-align: center;">
-                        <div
-                          class="rank-position"
-                          :class="`pos-${index + 1}`"
-                        >{{ index + 1 }}º</div>
-                      </td>
-                      <td class="font-bold text-lg">{{ row.player_name }}</td>
-                      <td style="text-align: center;">
-                        <span class="points-badge">{{ row.league_points }}</span>
-                      </td>
-                      <td
-                        style="text-align: center;"
-                        class="text-yellow-500 font-bold text-lg"
-                      >{{ row.total_golds }}</td>
-                      <td
-                        style="text-align: center;"
-                        class="text-gray-400 font-bold text-lg"
-                      >{{ row.total_silvers }}</td>
-                      <td
-                        style="text-align: center;"
-                        class="text-amber-700 font-bold text-lg"
-                      >{{ row.total_bronzes }}</td>
-                      <td style="text-align: center;">
-                        <span class="avg-badge">{{ row.avg_position || '-' }}</span>
-                      </td>
-                      <td
-                        style="text-align: center;"
-                        class="text-gray-500"
-                      >{{ row.tournaments_played }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+        <div class="ios-grouped-section mb-5">
+          <div class="ios-grouped-label">🏆 CLASSIFICAÇÃO OFICIAL</div>
+          <div
+            class="ios-grouped-list bg-white"
+            style="overflow-x: auto;"
+          >
+            <div
+              v-if="ranking.length === 0"
+              class="p-4 text-center text-gray-500"
+            >Nenhuma batalha travada ainda.</div>
+            <table
+              v-else
+              class="w-full text-left border-collapse"
+              style="min-width: 600px;"
+            >
+              <thead>
+                <tr class="bg-gray-50 border-bottom-1 surface-border text-xs text-gray-500 uppercase">
+                  <th class="p-3 text-center">Pos</th>
+                  <th class="p-3">Comandante</th>
+                  <th class="p-3 text-center">Pontos</th>
+                  <th class="p-3 text-center">1º</th>
+                  <th class="p-3 text-center">2º</th>
+                  <th class="p-3 text-center">3º</th>
+                  <th class="p-3 text-center">Média</th>
+                  <th class="p-3 text-center">Jogos</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(row, index) in ranking"
+                  :key="row.player_name"
+                  class="border-bottom-1 surface-border last:border-none"
+                >
+                  <td
+                    class="p-3 text-center font-bold"
+                    :class="'text-pos-' + (index + 1)"
+                  >{{ index + 1 }}º</td>
+                  <td class="p-3 font-bold text-lg">{{ row.player_name }}</td>
+                  <td class="p-3 text-center"><span class="bg-blue-50 text-blue-500 px-2 py-1 border-round font-bold">{{
+                      row.league_points }}</span></td>
+                  <td class="p-3 text-center text-yellow-500 font-bold text-lg">{{ row.total_golds }}</td>
+                  <td class="p-3 text-center text-gray-400 font-bold text-lg">{{ row.total_silvers }}</td>
+                  <td class="p-3 text-center text-orange-600 font-bold text-lg">{{ row.total_bronzes }}</td>
+                  <td class="p-3 text-center"><span
+                      class="bg-gray-100 text-gray-600 px-2 py-1 border-round text-xs font-bold"
+                    >{{ row.avg_position || '-' }}</span></td>
+                  <td class="p-3 text-center text-gray-500">{{ row.tournaments_played }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+        </div>
 
-          <div class="history-section mt-5">
-            <div class="section-header mb-3">
-              <h2 class="text-xl font-bold m-0">Últimos Confrontos & Meta Game</h2>
-            </div>
-
-            <div class="tournaments-list">
+        <div class="ios-grouped-section">
+          <div class="ios-grouped-label">ÚLTIMOS CONFRONTOS & META GAME</div>
+          <div
+            v-if="tournaments.length === 0"
+            class="ios-grouped-list p-4 text-center text-gray-500"
+          >Nenhum torneio registado.</div>
+          <div
+            v-else
+            class="flex flex-column gap-3"
+          >
+            <div
+              v-for="tourney in tournaments"
+              :key="tourney.id"
+              class="ios-grouped-list bg-white"
+            >
               <div
-                v-if="tournaments.length === 0"
-                class="p-4 text-center text-gray-500 card"
+                class="ios-list-item cursor-pointer"
+                @click="toggleTournament(tourney.id)"
               >
-                Nenhum torneio registado.
+                <div class="flex flex-column">
+                  <span class="font-bold text-lg">{{ tourney.name }}</span>
+                  <span class="text-xs text-gray-500 mt-1"><i class="pi pi-calendar mr-1"></i> {{
+                    formatDate(tourney.tournament_date) }}</span>
+                </div>
+                <i
+                  class="pi text-gray-400"
+                  :class="expandedTournaments[tourney.id] ? 'pi-chevron-up' : 'pi-chevron-down'"
+                ></i>
               </div>
 
               <div
-                v-for="tourney in tournaments"
-                :key="tourney.id"
-                class="tournament-card card"
-                :class="{ 'expanded': expandedTournaments[tourney.id] }"
+                v-if="expandedTournaments[tourney.id]"
+                class="p-3 bg-gray-50 border-top-1 surface-border"
               >
                 <div
-                  class="tourney-header-clickable"
-                  @click="toggleTournament(tourney.id)"
-                >
-                  <div class="tourney-info">
-                    <h4 class="font-bold m-0 mb-1">{{ tourney.name }}</h4>
-                    <div class="tourney-meta text-sm text-gray-500">
-                      <span><i class="pi pi-calendar mr-1"></i> {{ formatDate(tourney.tournament_date) }}</span>
-                    </div>
-                  </div>
-                  <div class="expand-icon">
-                    <i
-                      class="pi"
-                      :class="expandedTournaments[tourney.id] ? 'pi-chevron-up' : 'pi-chevron-down'"
-                    ></i>
-                  </div>
-                </div>
-
+                  v-if="tourney.results.length === 0"
+                  class="text-center text-gray-400 text-sm"
+                >Sem resultados.</div>
                 <div
-                  v-if="expandedTournaments[tourney.id]"
-                  class="tourney-details-body"
+                  v-else
+                  class="flex flex-column gap-2"
                 >
                   <div
-                    v-if="tourney.results.length === 0"
-                    class="text-center text-gray-400 py-3 text-sm"
-                  >
-                    Nenhum jogador pontuou nesta etapa.
-                  </div>
-                  <div
-                    v-else
-                    class="results-inner-list"
+                    v-for="res in tourney.results"
+                    :key="res.player_name"
+                    class="flex align-items-center bg-white p-2 border-round border-1 surface-border"
                   >
                     <div
-                      v-for="res in tourney.results"
-                      :key="res.player_name"
-                      class="result-inner-row"
-                    >
-                      <div
-                        class="inner-pos"
-                        :class="`medal-${res.final_position}`"
-                      >{{ res.final_position }}º</div>
-
-                      <div class="inner-player">
-                        <span class="inner-name font-bold">{{ res.player_name }}</span>
-
-                        <div
-                          v-if="res.deck_name"
-                          class="text-sm text-gray-500 mt-1"
-                        >
-                          <i class="pi pi-id-card mr-1"></i>{{ res.deck_name }}
-                        </div>
-
-                        <a
-                          v-if="res.deck_url"
-                          :href="res.deck_url"
-                          target="_blank"
-                          class="deck-link"
-                        >
-                          <i class="pi pi-external-link"></i> Ver Lista
-                        </a>
-                      </div>
-
-                      <div class="inner-pts">{{ res.total_points }} pts</div>
+                      class="font-bold w-2rem text-center text-lg"
+                      :class="'text-pos-' + res.final_position"
+                    >{{ res.final_position }}º</div>
+                    <div class="flex-1 px-2 flex flex-column">
+                      <span class="font-bold text-sm">{{ res.player_name }}</span>
+                      <a
+                        v-if="res.deck_url"
+                        :href="res.deck_url"
+                        target="_blank"
+                        class="text-xs text-blue-500 no-underline mt-1 font-medium"
+                      ><i class="pi pi-external-link"></i> {{ res.deck_name || 'Ver Lista' }}</a>
+                      <span
+                        v-else-if="res.deck_name"
+                        class="text-xs text-gray-500 mt-1"
+                      ><i class="pi pi-id-card"></i> {{ res.deck_name }}</span>
                     </div>
+                    <div class="font-bold text-blue-500 text-sm bg-blue-50 px-2 py-1 border-round">{{ res.total_points
+                      }} pts</div>
                   </div>
                 </div>
               </div>
@@ -213,11 +158,10 @@
           </div>
         </div>
 
-        <footer class="public-footer">
-          <p>Powered by <strong>Arena Manager</strong></p>
-        </footer>
+        <div class="text-center mt-5 text-gray-400 text-sm pb-4">
+          Powered by <strong class="text-gray-500">Arena Manager</strong>
+        </div>
       </main>
-
     </template>
   </div>
 </template>
@@ -234,367 +178,241 @@ const error = ref(null)
 const league = ref({})
 const ranking = ref([])
 const tournaments = ref([])
-
 const expandedTournaments = ref({})
 
 onMounted(async () => {
   const leagueId = route.params.id
-  if (!leagueId) {
-    error.value = 'Link inválido.'
-    isLoading.value = false
-    return
-  }
-
+  if (!leagueId) { error.value = 'Link inválido.'; isLoading.value = false; return }
   try {
     const data = await api.getPublicLeagueData(leagueId)
-    league.value = data.league
-    ranking.value = data.ranking
-    tournaments.value = data.tournaments || []
-  } catch (err) {
-    error.value = err.message || 'Erro ao carregar a liga.'
-  } finally {
-    isLoading.value = false
-  }
+    league.value = data.league; ranking.value = data.ranking; tournaments.value = data.tournaments || []
+  } catch (err) { error.value = err.message || 'Erro ao carregar a liga.' }
+  finally { isLoading.value = false }
 })
 
-function toggleTournament(id) {
-  expandedTournaments.value[id] = !expandedTournaments.value[id]
-}
-
-function formatDate(dateString) {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' })
-}
+function toggleTournament(id) { expandedTournaments.value[id] = !expandedTournaments.value[id] }
+function formatDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '' }
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@800&display=swap');
-
-.public-league-page {
-  min-height: 100vh;
-  background-color: var(--bg-primary, #f8f9fa);
-  font-family: var(--font-family);
-}
-
-.loading-container,
-.error-container {
+.h-screen {
   height: 100vh;
+}
+
+.text-4xl {
+  font-size: 2.25rem;
+}
+
+.text-5xl {
+  font-size: 3rem;
+}
+
+.flex {
   display: flex;
+}
+
+.flex-column {
   flex-direction: column;
+}
+
+.align-items-center {
   align-items: center;
+}
+
+.justify-content-center {
   justify-content: center;
-  gap: 1rem;
-  color: var(--text-secondary);
 }
 
-.error-container i {
-  font-size: 4rem;
-  color: #ef4444;
+.text-center {
+  text-align: center;
 }
 
-.public-header {
-  background-color: var(--bg-secondary, #ffffff);
-  border-bottom: 1px solid var(--border-color);
-  padding: 2rem 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-}
-
-.header-content {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.logo-area {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.logo-circle {
-  width: 64px;
-  height: 64px;
-  background: rgba(59, 130, 246, 0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-.logo-icon {
-  font-size: 1.8rem;
-  color: var(--accent-primary, #3b82f6);
-  text-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
-}
-
-.logo-area h1 {
-  margin: 0 0 0.25rem 0;
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -0.5px;
-}
-
-.season-badge {
-  display: inline-block;
-  background: var(--bg-primary);
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
+.font-bold {
   font-weight: 700;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
 }
 
-.public-main {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 3rem 1.5rem;
+.font-medium {
+  font-weight: 500;
 }
 
-.card {
-  background: var(--bg-secondary, #ffffff);
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--border-color);
-  overflow: hidden;
+.mb-2 {
+  margin-bottom: 0.5rem;
 }
 
-.card-header {
-  padding: 2rem 2rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-  background-color: rgba(0, 0, 0, 0.01);
+.mb-3 {
+  margin-bottom: 1rem;
 }
 
-.card-header h2 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
-  color: var(--text-primary);
+.mb-5 {
+  margin-bottom: 2rem;
 }
 
-.card-header p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
+.mt-1 {
+  margin-top: 0.25rem;
 }
 
-/* =========================================================
-   TABELA NATIVA (Apple HIG)
-   ========================================================= */
-.apple-list-card {
-  background: var(--bg-secondary);
-  width: 100%;
+.mt-5 {
+  margin-top: 2rem;
 }
 
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 
-.ios-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.95rem;
+.px-3 {
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-.ios-table th {
-  background: rgba(0, 0, 0, 0.02);
-  padding: 1.25rem 1rem;
-  text-align: left;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--border-color);
+.px-4 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
-.ios-table td {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text-primary);
+.py-1 {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 
-.ios-table tbody tr:last-child td {
-  border-bottom: none;
+.py-4 {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
 }
 
-.ios-table tbody tr:hover {
-  background: rgba(0, 0, 0, 0.01);
+.pt-5 {
+  padding-top: 2.5rem;
 }
 
-.rank-position {
-  font-family: 'JetBrains Mono', monospace !important;
-  font-weight: 800;
-  color: var(--text-secondary);
-  font-size: 1.2rem;
-  letter-spacing: -0.5px;
+.pb-3 {
+  padding-bottom: 1rem;
 }
 
-.pos-1 {
+.pb-4 {
+  padding-bottom: 1.5rem;
+}
+
+.text-blue-500 {
+  color: var(--system-blue);
+}
+
+.text-red-500 {
+  color: var(--system-red);
+}
+
+.text-gray-400 {
+  color: #9ca3af;
+}
+
+.text-gray-500 {
+  color: #6b7280;
+}
+
+.text-gray-600 {
+  color: #4b5563;
+}
+
+.text-yellow-500 {
   color: #f59e0b;
-  font-size: 1.5rem;
 }
 
-.pos-2 {
-  color: #94a3b8;
-  font-size: 1.3rem;
+.text-orange-600 {
+  color: #ea580c;
 }
 
-.pos-3 {
-  color: #b45309;
-  font-size: 1.3rem;
-}
-
-.points-badge {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  font-weight: 800;
-  font-size: 1.1rem;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-.avg-badge {
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
-  font-weight: 800;
-  border: 1px solid var(--border-color);
-}
-
-/* =========================================================
-   LISTA DE TORNEIOS EXPANSÍVEIS
-   ========================================================= */
-.tournaments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.tournament-card {
-  transition: all 0.2s;
-}
-
-.tournament-card.expanded {
-  border-color: var(--accent-primary);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
-}
-
-.tourney-header-clickable {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem;
-  cursor: pointer;
-  background: var(--bg-secondary);
-}
-
-.tourney-details-body {
-  background: var(--bg-primary);
-  border-top: 1px dashed var(--border-color);
-  padding: 1rem;
-}
-
-.results-inner-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.result-inner-row {
-  display: flex;
-  align-items: flex-start;
-  background: var(--bg-secondary);
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  gap: 1rem;
-}
-
-.inner-pos {
-  width: 32px;
-  font-weight: 800;
-  font-family: 'JetBrains Mono', monospace;
-  color: var(--text-secondary);
-  margin-top: 0.2rem;
-}
-
-.medal-1 {
-  color: #b45309;
-}
-
-.medal-2 {
-  color: #475569;
-}
-
-.medal-3 {
-  color: #92400e;
-}
-
-.inner-player {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.inner-pts {
-  font-weight: 800;
-  color: var(--accent-primary);
-  font-size: 0.95rem;
-  background: rgba(59, 130, 246, 0.1);
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
-  margin-top: 0.1rem;
-}
-
-/* Link Nativo do Deck */
-.deck-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  color: #3b82f6;
-  text-decoration: none;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-top: 0.5rem;
-  transition: color 0.2s;
-}
-
-.deck-link:hover {
-  color: #1d4ed8;
-}
-
-.deck-link i {
+.text-xs {
   font-size: 0.75rem;
 }
 
-.public-footer {
-  text-align: center;
-  margin-top: 3rem;
-  padding-bottom: 2rem;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
+.text-sm {
+  font-size: 0.875rem;
 }
 
-@media (max-width: 600px) {
-  .public-header {
-    padding: 1.5rem 1rem;
-  }
+.text-lg {
+  font-size: 1.125rem;
+}
 
-  .logo-area h1 {
-    font-size: 1.5rem;
-  }
+.text-xl {
+  font-size: 1.25rem;
+}
 
-  .public-main {
-    padding: 1.5rem 1rem;
-  }
+.bg-white {
+  background-color: #ffffff;
+}
 
-  .card-header {
-    padding: 1.5rem;
-  }
+.bg-gray-50 {
+  background-color: #f9fafb;
+}
+
+.bg-gray-100 {
+  background-color: #f3f4f6;
+}
+
+.bg-blue-50 {
+  background-color: #eff6ff;
+}
+
+.border-bottom-1 {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.border-top-1 {
+  border-top: 1px solid var(--border-color);
+}
+
+.border-1 {
+  border: 1px solid var(--border-color);
+}
+
+.border-round {
+  border-radius: 6px;
+}
+
+.surface-border {
+  border-color: var(--border-color) !important;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.w-2rem {
+  width: 2rem;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.no-underline {
+  text-decoration: none;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.text-pos-1 {
+  color: #f59e0b;
+}
+
+.text-pos-2 {
+  color: #94a3b8;
+}
+
+.text-pos-3 {
+  color: #b45309;
+}
+
+.text-pos-4 {
+  color: #6b7280;
+}
+
+.last\:border-none:last-child {
+  border-bottom: none !important;
 }
 </style>

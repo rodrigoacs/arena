@@ -7,7 +7,7 @@
       class="drawer-toggle ios-icon-btn"
       @click="isDrawerOpen = !isDrawerOpen"
     >
-      <i class="pi pi-bars"></i>
+      <i class="pi pi-bars text-xl text-blue-500"></i>
     </button>
 
     <div
@@ -37,53 +37,17 @@ const { tournamentStarted } = useTournament()
 
 <style scoped>
 .tournament-page {
-  --radius-lg: 20px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.12);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-
   display: flex;
   width: 100%;
   height: 100vh;
-  background-color: var(--bg-primary, #f8f9fa);
-  color: var(--text-primary, #1f2937);
-  font-family: inherit;
-}
-
-@media (prefers-color-scheme: dark) {
-  .tournament-page {
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
-    --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.4);
-    --glass-bg: rgba(30, 30, 30, 0.8);
-  }
+  background-color: var(--bg-primary);
 }
 
 .main-content {
   flex: 1;
   overflow-y: auto;
-  padding: 2.5rem 3rem;
+  padding: 0;
   height: 100vh;
-}
-
-/* COMPONENTES NATIVOS GERAIS PARA O APP */
-:deep(.ios-icon-btn) {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  cursor: pointer;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-  color: var(--text-primary);
-}
-
-:deep(.ios-icon-btn:hover) {
-  background: rgba(0, 0, 0, 0.05);
 }
 
 .drawer-toggle {
@@ -92,20 +56,20 @@ const { tournamentStarted } = useTournament()
   top: 1rem;
   left: 1rem;
   z-index: 1001;
-  background: var(--bg-secondary) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-color) !important;
-  box-shadow: var(--shadow-md);
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px);
   width: 44px;
   height: 44px;
-  font-size: 1.2rem;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-@media (max-width: 1024px) {
-  .main-content {
-    padding: 2rem;
-  }
+.text-blue-500 {
+  color: var(--system-blue);
+}
+
+.text-xl {
+  font-size: 1.25rem;
 }
 
 @media (max-width: 992px) {
@@ -113,19 +77,12 @@ const { tournamentStarted } = useTournament()
     display: block;
   }
 
-  .main-content {
-    padding: 1.5rem;
-    padding-top: 5rem;
-    height: auto;
-    min-height: 100vh;
-  }
-
   .drawer-toggle {
     display: flex;
   }
 
   .drawer-open .drawer-toggle {
-    transform: translateX(350px);
+    transform: translateX(300px);
   }
 
   .drawer-overlay {
@@ -135,12 +92,11 @@ const { tournamentStarted } = useTournament()
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--glass-bg);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 999;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 39;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s;
   }
 
   .drawer-open .drawer-overlay {
@@ -152,11 +108,6 @@ const { tournamentStarted } = useTournament()
 @media (max-width: 400px) {
   .drawer-open .drawer-toggle {
     transform: translateX(calc(85vw + 10px));
-  }
-
-  .main-content {
-    padding: 1rem;
-    padding-top: 5rem;
   }
 }
 </style>
