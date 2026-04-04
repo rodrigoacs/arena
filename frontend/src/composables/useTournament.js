@@ -147,7 +147,7 @@ export function useTournament() {
 
     try {
       const dataFormatada = new Date().toISOString().split('T')[0]
-      const nomeTorneio = `Etapa ${dataFormatada}`
+      const nomeTorneio = `Torneio ${dataFormatada}`
 
       const dbTournament = await api.createTournament(nomeTorneio, dataFormatada)
       activeTournamentId.value = dbTournament.id

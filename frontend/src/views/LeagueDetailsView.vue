@@ -27,7 +27,7 @@
           class="ios-btn ios-btn-primary py-2 px-3 text-sm"
           @click="goToTournament"
         >
-          <i class="pi pi-play"></i> Nova Etapa
+          <i class="pi pi-play"></i> Nova Torneio
         </button>
       </div>
     </header>
@@ -97,7 +97,7 @@
                   title="3º Lugares"
                 >3º</th>
                 <th class="p-3 text-center font-bold">Média</th>
-                <th class="p-3 text-center font-bold">Etapas</th>
+                <th class="p-3 text-center font-bold">Torneios</th>
               </tr>
             </thead>
             <tbody>
@@ -176,7 +176,7 @@
               <div
                 v-if="tourney.results.length === 0"
                 class="text-center text-system-gray text-sm"
-              >Nenhum jogador pontuou nesta etapa.</div>
+              >Nenhum jogador pontuou nesta torneio.</div>
               <div
                 v-else
                 class="flex flex-col gap-2"
@@ -255,7 +255,7 @@
                   <input
                     type="text"
                     v-model="importData.name"
-                    placeholder="Ex: Etapa Inverno"
+                    placeholder="Ex: Torneio Inverno"
                     class="ios-input text-sm"
                   />
                 </div>
@@ -567,7 +567,7 @@ function copyPublicLink() {
 
 function exportCSV() {
   if (!ranking.value || ranking.value.length === 0) return
-  let csvContent = "data:text/csv;charset=utf-8,Posição,Jogador,Pontos,1º Lugar,2º Lugar,3º Lugar,Média de Posição,Etapas Jogadas\n"
+  let csvContent = "data:text/csv;charset=utf-8,Posição,Jogador,Pontos,1º Lugar,2º Lugar,3º Lugar,Média de Posição,Torneios Jogados\n"
   ranking.value.forEach((row, i) => { csvContent += `${i + 1},"${row.player_name}",${row.league_points},${row.total_golds},${row.total_silvers},${row.total_bronzes},${row.avg_position || '-'},${row.tournaments_played}\n` })
   const link = document.createElement("a"); link.href = encodeURI(csvContent); link.download = `ranking_${new Date().toISOString().split('T')[0]}.csv`; link.click()
 }

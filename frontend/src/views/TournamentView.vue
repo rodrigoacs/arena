@@ -16,7 +16,7 @@
 
     <div
       :class="isDrawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-      class="fixed lg:relative z-40 transition-transform duration-300 h-full w-[85vw] sm:w-[350px]"
+      class="fixed lg:relative z-40 transition-transform duration-300 h-full w-[100vw] sm:w-[350px]"
     >
       <RankingDrawer />
     </div>

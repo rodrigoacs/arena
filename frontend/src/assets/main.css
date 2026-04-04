@@ -1,4 +1,4 @@
-/* Fontes Híbridas: Playfair (Títulos), Inter (Leitura), JetBrains (Dados) */
+/* Fontes Híbridas */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@700;800&display=swap');
 
 @import "tailwindcss";
@@ -6,20 +6,21 @@
 
 /* 1. Variáveis de Identidade "Arena / MTG" */
 :root {
+  /* AVISA O NAVEGADOR QUE O TEMA PADRÃO É CLARO */
+  color-scheme: light;
+
   --color-system-blue: #2563eb;
   --color-system-green: #10b981;
   --color-system-red: #ef4444;
   --color-system-orange: #f59e0b;
   --color-system-gray: #64748b;
 
-  /* Modo Claro: Vibe Pergaminho */
   --color-system-bg: #fdfcf8;
   --color-system-card: #ffffff;
   --color-system-text: #0f172a;
   --color-system-text-sec: #475569;
   --color-system-border: #e2e8f0;
 
-  /* Cores de Raridade MTG */
   --color-mythic: #df7e00;
   --color-rare: #d4af37;
   --color-uncommon: #94a3b8;
@@ -27,9 +28,11 @@
 }
 
 [data-theme="dark"] {
+  /* A MÁGICA PARA ELEMENTOS NATIVOS (SELECTS, CALENDÁRIOS) FICAREM ESCUROS */
+  color-scheme: dark;
+
   --color-system-blue: #3b82f6;
 
-  /* Modo Escuro: Vibe Obsidiana */
   --color-system-bg: #0b0f19;
   --color-system-card: #151e2e;
   --color-system-text: #f8fafc;
@@ -111,7 +114,7 @@
   }
 }
 
-/* 3. Estilos de Base */
+/* 3. Estilos de Base e Customizações de Scrollbar */
 @layer base {
   body {
     @apply bg-system-bg text-system-text font-sans antialiased transition-colors duration-300;
@@ -132,6 +135,46 @@
 
   .rank-number {
     @apply font-mono font-bold;
+  }
+
+  /* =========================================================
+     CUSTOM SCROLLBARS (Estilo macOS)
+     ========================================================= */
+  /* Scrollbar fina padrão Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.4) transparent;
+  }
+
+  /* Scrollbars para Chrome, Edge e Safari */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 116, 139, 0.3);
+    /* Cinza translúcido */
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(100, 116, 139, 0.5);
+  }
+
+  [data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background-color: rgba(203, 213, 225, 0.2);
+    /* Cinza claro translúcido no dark mode */
+  }
+
+  [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(203, 213, 225, 0.4);
   }
 }
 
@@ -200,6 +243,11 @@
     padding-right: 1.5rem;
   }
 
+  /* GARANTE QUE O FUNDO DAS OPÇÕES COMBINE COM O TEMA */
+  .ios-native-select option {
+    @apply bg-system-card text-system-text;
+  }
+
   .ios-modal-overlay {
     @apply fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-4 backdrop-blur-sm animate-fade-in;
   }
@@ -264,5 +312,21 @@
 
   [data-theme="dark"] .avatar-circle {
     @apply bg-system-blue/20 text-blue-300 border-blue-500/30;
+  }
+
+  .text-mythic {
+    @apply text-[#df7e00];
+  }
+
+  .text-rare {
+    @apply text-[#d4af37];
+  }
+
+  .text-uncommon {
+    @apply text-[#94a3b8];
+  }
+
+  .text-common {
+    @apply text-[#475569];
   }
 }

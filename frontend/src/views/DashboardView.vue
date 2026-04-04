@@ -110,7 +110,7 @@
       <div class="ios-modal">
         <div class="ios-modal-header">Nova Liga</div>
         <div class="ios-modal-content p-0 bg-system-bg dark:bg-system-bgDark">
-          <div class="ios-grouped-section mt-6 mx-4">
+          <div class="ios-grouped-section mt-6 px-4">
             <div class="ios-grouped-list">
               <div class="ios-list-item"><input
                   type="text"
@@ -149,7 +149,7 @@
       <div class="ios-modal ios-modal-lg">
         <div class="ios-modal-header">Participantes Globais</div>
         <div class="ios-modal-content p-0">
-          <div class="ios-grouped-section mt-6 mx-4">
+          <div class="ios-grouped-section mt-6 px-4">
             <div class="ios-grouped-list">
               <div class="ios-list-item pr-2">
                 <input
@@ -169,7 +169,7 @@
             <p class="text-xs text-system-gray mt-2 mx-2">Este elenco estará disponível em todas as ligas.</p>
           </div>
 
-          <div class="ios-grouped-section mx-4">
+          <div class="ios-grouped-section px-4">
             <div class="ios-grouped-label">Jogadores ({{ players.length }})</div>
             <div class="ios-grouped-list max-h-[40vh] overflow-y-auto">
               <div

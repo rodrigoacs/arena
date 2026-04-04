@@ -114,7 +114,7 @@
         <div class="ios-modal-content p-0 bg-system-bg dark:bg-system-bgDark">
           <div
             v-if="selectedTable !== null"
-            class="ios-grouped-section mt-6 mx-4"
+            class="ios-grouped-section mt-6 px-4"
           >
             <div class="ios-grouped-list">
               <div
@@ -303,7 +303,7 @@
       <div class="ios-modal">
         <div class="ios-modal-header text-2xl py-6">Pódio do Torneio 🏆</div>
         <div class="ios-modal-content p-0 bg-system-bg dark:bg-system-bgDark">
-          <div class="ios-grouped-section mt-6 mx-4">
+          <div class="ios-grouped-section mt-6 px-4">
             <div class="ios-grouped-list">
               <div
                 v-for="(player, index) in sortedPlayers"

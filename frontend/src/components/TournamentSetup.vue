@@ -139,7 +139,7 @@
           @click="handleStartTournament"
           :disabled="players.length < playersPerTable || isProcessing"
         >
-          Iniciar Etapa ({{ players.length }} Jogadores)
+          Iniciar Torneio ({{ players.length }} Jogadores)
         </button>
         <p
           class="text-system-orange text-xs mt-2 font-medium"
@@ -158,7 +158,7 @@
       <div class="ios-modal">
         <div class="ios-modal-header">Deck de {{ currentEditingPlayerName }}</div>
         <div class="ios-modal-content p-0 bg-system-bg dark:bg-system-bgDark">
-          <div class="ios-grouped-section mt-6 mx-4">
+          <div class="ios-grouped-section mt-6 px-4">
             <div class="ios-grouped-list">
               <div class="ios-list-item">
                 <input
