@@ -65,7 +65,10 @@
                     class="p-3 text-center font-bold"
                     :class="index === 0 ? 'text-system-orange text-xl' : index === 1 ? 'text-system-gray text-lg' : index === 2 ? 'text-[#b45309] text-lg' : 'text-system-gray'"
                   >{{ index + 1 }}º</td>
-                  <td class="p-3 font-bold text-lg whitespace-nowrap">{{ row.player_name }}</td>
+                  <td
+                    class="p-3 font-bold text-lg max-w-[180px] sm:max-w-[250px] truncate"
+                    :title="row.player_name"
+                  >{{ row.player_name }}</td>
                   <td class="p-3 text-center"><span
                       class="bg-system-blue/10 text-system-blue px-2 py-1 rounded font-bold"
                     >{{ row.league_points }}</span></td>
