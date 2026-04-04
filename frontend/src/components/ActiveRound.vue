@@ -1,5 +1,5 @@
 <template>
-  <div class="active-round-container max-w-content pb-5">
+  <div class="max-w-[600px] mx-auto pb-12">
     <div
       v-if="toastMessage"
       class="ios-toast-container"
@@ -9,10 +9,10 @@
       <div class="ios-toast-detail">{{ toastMessage.detail }}</div>
     </div>
 
-    <header class="ios-page-header px-3 pt-4 pb-2">
-      <div class="flex justify-content-between align-items-center mb-2">
+    <header class="px-4 pt-8 pb-2">
+      <div class="flex justify-between items-center mb-2">
         <button
-          class="ios-btn ios-btn-text p-0 m-0 text-red-500"
+          class="ios-btn ios-btn-text p-0 m-0 text-system-red"
           @click="showResetConfirmDialog = true"
         >
           <i class="pi pi-times"></i> Abortar
@@ -24,13 +24,12 @@
           Pausar <i class="pi pi-chevron-right ml-1 text-xs"></i>
         </button>
       </div>
-      <div class="text-center mt-3">
-        <h1 class="ios-large-title text-center m-0">Rodada {{ currentRound }}</h1>
-        <p class="text-gray-500 text-sm mt-1 mb-2">De {{ roundCount }} rodadas programadas</p>
+      <div class="text-center mt-4">
+        <h1 class="text-3xl font-bold m-0">Rodada {{ currentRound }}</h1>
+        <p class="text-system-gray text-sm mt-1 mb-3">De {{ roundCount }} rodadas programadas</p>
         <button
           v-if="canEditPairings"
-          class="ios-btn ios-btn-text"
-          style="padding: 0.25rem;"
+          class="ios-btn ios-btn-text py-1 px-2"
           @click="openEditPairings"
         >
           <i class="pi pi-sliders-h"></i> Ajustar Mesas
@@ -38,16 +37,16 @@
       </div>
     </header>
 
-    <div class="px-3">
-      <div class="tables-grid">
+    <div class="px-4">
+      <div class="flex flex-col gap-6">
         <div
           v-for="(table, index) in currentTables"
           :key="index"
-          class="ios-grouped-section mb-4"
+          class="ios-grouped-section !mb-0"
         >
-          <div class="ios-grouped-label flex justify-content-between">
+          <div class="ios-grouped-label flex justify-between">
             <span>MESA {{ table.number }}</span>
-            <span :class="table.status === 'completed' ? 'text-green-500' : 'text-orange-500'">
+            <span :class="table.status === 'completed' ? 'text-system-green' : 'text-system-orange'">
               {{ table.status === 'completed' ? 'Finalizada' : 'Em Andamento' }}
             </span>
           </div>
@@ -60,7 +59,7 @@
               <span class="font-medium">{{ player.name }}</span>
               <span
                 v-if="table.status === 'completed'"
-                class="font-bold text-blue-500"
+                class="font-bold text-system-blue"
               >{{ player.result }}º</span>
             </div>
             <div class="ios-list-item p-0">
@@ -73,7 +72,7 @@
               </button>
               <button
                 v-else
-                class="ios-btn ios-btn-text w-full py-3 text-gray-500"
+                class="ios-btn ios-btn-text w-full py-3 text-system-gray"
                 @click="openResultDialog(index, true)"
               >
                 Editar Placar
@@ -84,21 +83,19 @@
       </div>
 
       <div
-        class="mt-5 mb-5"
+        class="mt-8 mb-8"
         v-if="allResultsRegistered"
       >
         <button
           v-if="currentRound < roundCount"
-          class="ios-btn ios-btn-success w-full py-3"
-          style="font-size: 1.1rem; border-radius: 14px;"
+          class="ios-btn ios-btn-success w-full py-3.5 text-lg rounded-xl"
           @click="handleNextRound"
         >
           Iniciar Próxima Rodada
         </button>
         <button
           v-else
-          class="ios-btn ios-btn-primary w-full py-3"
-          style="font-size: 1.1rem; border-radius: 14px;"
+          class="ios-btn ios-btn-primary w-full py-3.5 text-lg rounded-xl"
           @click="showFinishConfirmDialog = true"
         >
           Encerrar Torneio e Ver Pódio
@@ -114,32 +111,25 @@
       <div class="ios-modal">
         <div class="ios-modal-header">Placar - Mesa {{ selectedTable !== null ? currentTables[selectedTable]?.number :
           '' }}</div>
-        <div
-          class="ios-modal-content p-0"
-          style="background: var(--bg-primary);"
-        >
+        <div class="ios-modal-content p-0 bg-system-bg dark:bg-system-bgDark">
           <div
             v-if="selectedTable !== null"
-            class="ios-grouped-section mt-4 mx-3"
+            class="ios-grouped-section mt-6 mx-4"
           >
             <div class="ios-grouped-list">
               <div
                 v-for="(player, playerIndex) in currentTables[selectedTable].players"
                 :key="player.id"
-                class="ios-list-item flex-column align-items-start py-3"
+                class="ios-list-item flex-col items-start py-4"
               >
-                <span class="font-bold mb-2">{{ player.name }}</span>
-                <div
-                  class="flex w-full gap-2"
-                  style="flex-wrap: wrap;"
-                >
+                <span class="font-bold mb-3">{{ player.name }}</span>
+                <div class="flex w-full gap-2 flex-wrap">
                   <button
                     v-for="pos in currentTables[selectedTable].players.length"
                     :key="pos"
-                    class="ios-pos-btn"
-                    :class="{ 'selected': playerResults[playerIndex] === pos }"
+                    class="flex-1 min-w-[45px] py-2.5 bg-system-bg dark:bg-system-bgDark border border-system-border dark:border-system-borderDark rounded-lg font-semibold text-system-gray transition-colors text-lg"
+                    :class="playerResults[playerIndex] === pos ? '!bg-system-blue !text-white !border-system-blue' : ''"
                     @click="selectPosition(playerIndex, pos)"
-                    style="min-width: 45px;"
                   >
                     {{ pos }}º
                   </button>
@@ -149,7 +139,7 @@
           </div>
           <div
             v-if="resultsError"
-            class="text-red-500 text-center text-sm font-bold mx-3 mb-3"
+            class="text-system-red text-center text-sm font-bold mx-4 mb-4"
           >
             <i class="pi pi-exclamation-triangle"></i> {{ resultsError }}
           </div>
@@ -176,32 +166,34 @@
       <div class="ios-modal ios-modal-lg">
         <div class="ios-modal-header">Ajustar Mesas da Rodada</div>
         <div class="ios-modal-content p-0">
-          <div class="p-3 bg-white text-sm text-gray-500 text-center border-bottom-1 surface-border">
+          <div
+            class="p-4 bg-system-card dark:bg-system-cardDark text-sm text-system-gray text-center border-b border-system-border dark:border-system-borderDark"
+          >
             Mova os jogadores de lugar. Se selecionar alguém que já está em outra mesa, o sistema fará a troca.
           </div>
           <div
-            class="import-alert mx-3 mt-3"
+            class="bg-system-orange/10 border border-system-orange/30 text-system-orange p-3 rounded-lg font-semibold mx-4 mt-4"
             v-if="manualPairingError"
           >
             <i class="pi pi-exclamation-triangle mr-2"></i> {{ manualPairingError }}
           </div>
 
-          <div class="px-3 pt-3">
+          <div class="p-4">
             <div
               v-for="(table, tIndex) in manualTables"
               :key="tIndex"
-              class="ios-grouped-section mb-4"
+              class="ios-grouped-section mb-6"
             >
-              <div class="ios-grouped-label flex justify-content-between align-items-end">
+              <div class="ios-grouped-label flex justify-between items-end">
                 <span>MESA {{ tIndex + 1 }}</span>
-                <div class="flex gap-3">
+                <div class="flex gap-4">
                   <i
-                    class="pi pi-user-plus text-blue-500 cursor-pointer"
+                    class="pi pi-user-plus text-system-blue cursor-pointer text-lg"
                     @click="addManualSlot(tIndex)"
                   ></i>
                   <i
                     v-if="manualTables.length > 1"
-                    class="pi pi-times text-red-500 cursor-pointer"
+                    class="pi pi-times text-system-red cursor-pointer text-lg"
                     @click="removeManualTable(tIndex)"
                   ></i>
                 </div>
@@ -210,11 +202,11 @@
                 <div
                   v-for="(slotId, sIndex) in table.slots"
                   :key="sIndex"
-                  class="ios-list-item px-2 py-1"
+                  class="ios-list-item px-3 py-1"
                 >
                   <select
                     v-model="table.slots[sIndex]"
-                    class="ios-native-select flex-1"
+                    class="ios-native-select flex-1 py-2"
                     @change="(e) => handlePlayerMove(tIndex, sIndex, e.target.value)"
                   >
                     <option :value="null">Selecionar jogador...</option>
@@ -227,15 +219,15 @@
                     </option>
                   </select>
                   <button
-                    class="ios-btn ios-btn-text text-red-500 p-2"
+                    class="ios-btn ios-btn-text text-system-red p-2"
                     @click="removeManualSlot(tIndex, sIndex)"
-                  ><i class="pi pi-minus-circle"></i></button>
+                  ><i class="pi pi-minus-circle text-lg"></i></button>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="flex justify-content-center mb-4">
+          <div class="flex justify-center mb-6">
             <button
               class="ios-btn ios-btn-text"
               @click="addManualTable"
@@ -262,11 +254,12 @@
       @click.self="showResetConfirmDialog = false"
     >
       <div class="ios-modal">
-        <div class="ios-modal-header text-red-500">Confirmar Retorno</div>
+        <div class="ios-modal-header text-system-red">Confirmar Retorno</div>
         <div class="ios-modal-content text-center">
-          <p>Para voltar à configuração, todo o progresso será apagado e o torneio <strong>cancelado</strong>.</p>
+          <p>Para voltar à configuração, todo o progresso será apagado e o torneio <strong
+              class="text-system-red">cancelado</strong>.</p>
         </div>
-        <div class="ios-modal-footer flex-column">
+        <div class="ios-modal-footer flex-col">
           <button
             class="ios-btn ios-btn-danger w-full"
             @click="confirmCancel"
@@ -289,7 +282,7 @@
         <div class="ios-modal-content text-center">
           <p>Confirma o encerramento? Os resultados serão gravados no Ranking da Liga.</p>
         </div>
-        <div class="ios-modal-footer flex-column">
+        <div class="ios-modal-footer flex-col">
           <button
             class="ios-btn ios-btn-primary w-full"
             @click="confirmFinish"
@@ -308,12 +301,9 @@
       class="ios-modal-overlay"
     >
       <div class="ios-modal">
-        <div class="ios-modal-header">Pódio do Torneio</div>
-        <div
-          class="ios-modal-content p-0"
-          style="background: var(--bg-primary);"
-        >
-          <div class="ios-grouped-section mt-4 mx-3">
+        <div class="ios-modal-header text-2xl py-6">Pódio do Torneio 🏆</div>
+        <div class="ios-modal-content p-0 bg-system-bg dark:bg-system-bgDark">
+          <div class="ios-grouped-section mt-6 mx-4">
             <div class="ios-grouped-list">
               <div
                 v-for="(player, index) in sortedPlayers"
@@ -321,19 +311,23 @@
                 class="ios-list-item"
               >
                 <span
-                  class="font-bold"
-                  :class="`text-pos-${index + 1}`"
+                  class="font-bold text-lg w-8"
+                  :class="{
+                    'text-system-orange': index === 0,
+                    'text-system-gray': index === 1,
+                    'text-[#b45309]': index === 2
+                  }"
                 >{{ index + 1 }}º</span>
-                <span class="flex-1 ml-3 font-medium">{{ player.name }}</span>
-                <span class="font-bold text-blue-500">{{ player.points }} pts</span>
+                <span class="flex-1 ml-2 font-medium">{{ player.name }}</span>
+                <span class="font-bold text-system-blue bg-system-blue/10 px-2 py-1 rounded">{{ player.points }}
+                  pts</span>
               </div>
             </div>
           </div>
         </div>
-        <div class="ios-modal-footer flex-column p-3">
+        <div class="ios-modal-footer p-4">
           <button
-            class="ios-btn ios-btn-primary w-full py-3"
-            style="border-radius: 12px;"
+            class="ios-btn ios-btn-primary w-full py-3.5 text-lg rounded-xl"
             @click="finishAndGoToLeague"
           >Voltar ao Painel</button>
         </div>
@@ -347,7 +341,6 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTournament } from '../composables/useTournament'
 
-const DEBUG = false
 const router = useRouter()
 
 const toastMessage = ref(null)
@@ -488,15 +481,6 @@ function openResultDialog(tableIndex, isEditing = false) {
   showResultDialog.value = true
 }
 
-function generateRandomResults() {
-  currentTables.value.forEach((table, tableIndex) => {
-    if (table.status === 'completed') return
-    const numPlayersOnTable = table.players.length
-    const positions = Array.from({ length: numPlayersOnTable }, (_, i) => i + 1).sort(() => Math.random() - 0.5)
-    saveResults(tableIndex, positions)
-  })
-}
-
 async function confirmCancel() {
   await cancelTournament()
   showResetConfirmDialog.value = false
@@ -513,235 +497,10 @@ async function confirmFinish() {
     showFinishConfirmDialog.value = false
     showFinalResultsDialog.value = true
   } else {
-    showToast({ severity: 'error', summary: 'Erro de Servidor', detail: 'Falha ao salvar no banco.', life: 5000 })
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Falha ao salvar no banco.', life: 5000 })
   }
   isFinishing.value = false
 }
 
 function finishAndGoToLeague() { clearTournamentState(); router.push({ name: 'league' }) }
 </script>
-
-<style scoped>
-.max-w-content {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.flex {
-  display: flex;
-}
-
-.flex-column {
-  flex-direction: column;
-}
-
-.justify-content-between {
-  justify-content: space-between;
-}
-
-.justify-content-center {
-  justify-content: center;
-}
-
-.align-items-center {
-  align-items: center;
-}
-
-.align-items-start {
-  align-items: flex-start;
-}
-
-.align-items-end {
-  align-items: flex-end;
-}
-
-.p-0 {
-  padding: 0;
-}
-
-.p-2 {
-  padding: 0.5rem;
-}
-
-.p-3 {
-  padding: 1rem;
-}
-
-.m-0 {
-  margin: 0;
-}
-
-.ml-1 {
-  margin-left: 0.25rem;
-}
-
-.ml-3 {
-  margin-left: 1rem;
-}
-
-.mt-1 {
-  margin-top: 0.25rem;
-}
-
-.mt-2 {
-  margin-top: 0.5rem;
-}
-
-.mt-3 {
-  margin-top: 1rem;
-}
-
-.mt-4 {
-  margin-top: 1.5rem;
-}
-
-.mt-5 {
-  margin-top: 2.5rem;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-
-.mb-3 {
-  margin-bottom: 1rem;
-}
-
-.mb-4 {
-  margin-bottom: 1.5rem;
-}
-
-.mb-5 {
-  margin-bottom: 2.5rem;
-}
-
-.px-3 {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-.py-3 {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-
-.w-full {
-  width: 100%;
-}
-
-.flex-1 {
-  flex: 1;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-sm {
-  font-size: 0.85rem;
-}
-
-.text-xs {
-  font-size: 0.75rem;
-}
-
-.font-medium {
-  font-weight: 500;
-}
-
-.font-bold {
-  font-weight: 700;
-}
-
-.text-gray-500 {
-  color: var(--system-gray);
-}
-
-.text-blue-500 {
-  color: var(--system-blue);
-}
-
-.text-green-500 {
-  color: var(--system-green);
-}
-
-.text-orange-500 {
-  color: var(--system-orange);
-}
-
-.text-red-500 {
-  color: var(--system-red);
-}
-
-.bg-white {
-  background: var(--bg-secondary);
-}
-
-.border-bottom-1 {
-  border-bottom: 1px solid var(--border-color);
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.ios-pos-btn {
-  flex: 1;
-  padding: 0.6rem 0;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 1.1rem;
-}
-
-.ios-pos-btn.selected {
-  background: var(--system-blue);
-  color: white;
-  border-color: var(--system-blue);
-}
-
-.ios-native-select {
-  appearance: none;
-  background: transparent;
-  border: none;
-  font-size: 1rem;
-  font-family: inherit;
-  color: var(--text-primary);
-  outline: none;
-  cursor: pointer;
-  padding: 0.25rem;
-}
-
-.ios-native-select option {
-  color: #000;
-  background: #fff;
-}
-
-.import-alert {
-  background: rgba(255, 149, 0, 0.1);
-  border: 1px solid rgba(255, 149, 0, 0.3);
-  color: var(--system-orange);
-  padding: 1rem;
-  border-radius: 8px;
-  font-weight: 600;
-}
-
-.text-pos-1 {
-  color: #f59e0b;
-  font-size: 1.2rem;
-}
-
-.text-pos-2 {
-  color: #94a3b8;
-  font-size: 1.1rem;
-}
-
-.text-pos-3 {
-  color: #b45309;
-  font-size: 1.1rem;
-}
-</style>

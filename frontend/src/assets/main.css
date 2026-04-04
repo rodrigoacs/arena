@@ -1,326 +1,199 @@
+@import "tailwindcss";
 @import 'primeicons/primeicons.css';
 
+/* 1. Variáveis Nativas que mudam sozinhas com o Modo Escuro */
 :root {
-  --system-blue: #007aff;
-  --system-green: #34c759;
-  --system-red: #ff3b30;
-  --system-orange: #ff9500;
-  --system-gray: #8e8e93;
-  --system-gray-light: #e5e5ea;
+  --color-system-blue: #007aff;
+  --color-system-green: #34c759;
+  --color-system-red: #ff3b30;
+  --color-system-orange: #ff9500;
+  --color-system-gray: #8e8e93;
 
-  --system-bg: #f2f2f7;
-  --system-card: #ffffff;
-  --system-text: #000000;
-  --system-text-sec: #3c3c43;
-  --system-border: #c6c6c8;
-  --glass-bg: rgba(255, 255, 255, 0.85);
-
-  --accent-primary: var(--system-blue);
-  --bg-primary: var(--system-bg);
-  --bg-secondary: var(--system-card);
-  --text-primary: var(--system-text);
-  --text-secondary: var(--system-text-sec);
-  --border-color: var(--system-border);
-
-  --radius-lg: 16px;
-  --radius-md: 10px;
-  --radius-sm: 8px;
+  --color-system-bg: #f2f2f7;
+  --color-system-card: #ffffff;
+  --color-system-text: #000000;
+  --color-system-text-sec: #3c3c43;
+  --color-system-border: #c6c6c8;
 }
 
 [data-theme="dark"] {
-  --system-blue: #0a84ff;
-  --system-green: #30d158;
-  --system-red: #ff453a;
-  --system-orange: #ff9f0a;
+  --color-system-blue: #0a84ff;
+  --color-system-green: #30d158;
+  --color-system-red: #ff453a;
+  --color-system-orange: #ff9f0a;
 
-  --system-bg: #0f0f0f;
-  --system-card: #1c1c1e;
-  --system-text: #ffffff;
-  --system-text-sec: #ebebf5;
-  --system-border: #38383a;
-  --glass-bg: rgba(28, 28, 30, 0.85);
+  --color-system-bg: #141414;
+  /* True Black para ecrãs OLED */
+  --color-system-card: #1c1c1e;
+  --color-system-text: #ffffff;
+  --color-system-text-sec: #ebebf5;
+  --color-system-border: #38383a;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* 2. Dizemos ao Tailwind v4 quais as cores do nosso tema Apple HIG */
+@theme {
+  --color-system-blue: var(--color-system-blue);
+  --color-system-green: var(--color-system-green);
+  --color-system-red: var(--color-system-red);
+  --color-system-orange: var(--color-system-orange);
+  --color-system-gray: var(--color-system-gray);
+  --color-system-bg: var(--color-system-bg);
+  --color-system-card: var(--color-system-card);
+  --color-system-text: var(--color-system-text);
+  --color-system-text-sec: var(--color-system-text-sec);
+  --color-system-border: var(--color-system-border);
+
+  /* Registamos as animações no motor Tailwind */
+  --animate-fade-in: fadeIn 0.2s ease;
+  --animate-scale-up: scaleUp 0.2s ease;
+  --animate-slide-in: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scaleUp {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
-  transition: background-color 0.3s ease, color 0.3s ease;
+/* 3. Estilos Base e Componentes Nativos */
+@layer base {
+  body {
+    @apply bg-system-bg text-system-text antialiased transition-colors duration-300;
+  }
 }
 
-.ios-btn {
-  -webkit-appearance: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.8rem 1.2rem;
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  font-size: 1rem;
-  transition: opacity 0.2s;
-  font-family: inherit;
-}
+@layer components {
 
-.ios-btn:active:not(:disabled) {
-  opacity: 0.6;
-}
+  /* Botões */
+  .ios-btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-3 rounded-[10px] font-semibold cursor-pointer border-none text-[1rem] transition-opacity;
+  }
 
-.ios-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+  .ios-btn:active:not(:disabled) {
+    @apply opacity-60;
+  }
 
-.ios-btn-primary {
-  background: var(--system-blue);
-  color: white;
-}
+  .ios-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
 
-.ios-btn-danger {
-  background: var(--system-red);
-  color: white;
-}
+  .ios-btn-primary {
+    @apply bg-system-blue text-white;
+  }
 
-.ios-btn-success {
-  background: var(--system-green);
-  color: white;
-}
+  .ios-btn-danger {
+    @apply bg-system-red text-white;
+  }
 
-.ios-btn-text {
-  background: transparent;
-  color: var(--system-blue);
-  padding: 0.5rem;
-}
+  .ios-btn-success {
+    @apply bg-system-green text-white;
+  }
 
-.ios-btn-text.text-red {
-  color: var(--system-red);
-}
+  .ios-btn-text {
+    @apply bg-transparent text-system-blue p-2;
+  }
 
-.ios-grouped-section {
-  margin-bottom: 2rem;
-  width: 100%;
-}
+  .ios-icon-btn {
+    @apply bg-system-card border border-system-border cursor-pointer rounded-full flex items-center justify-center transition-colors text-system-text hover:bg-black/5;
+  }
 
-.ios-grouped-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--system-gray);
-  margin-bottom: 0.4rem;
-  margin-left: 1rem;
-  text-transform: uppercase;
-  letter-spacing: -0.01em;
-}
+  /* Secções e Listas Agrupadas */
+  .ios-grouped-section {
+    @apply mb-8 w-full;
+  }
 
-.ios-grouped-desc {
-  font-size: 0.8rem;
-  color: var(--system-gray);
-  margin-top: 0.4rem;
-  margin-left: 1rem;
-}
+  .ios-grouped-label {
+    @apply text-xs font-semibold text-system-gray mb-1.5 ml-4 uppercase tracking-wide;
+  }
 
-.ios-grouped-list {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
+  .ios-grouped-list {
+    @apply bg-system-card rounded-[10px] overflow-hidden border border-system-border transition-colors duration-300;
+  }
 
-.ios-list-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-  transition: background-color 0.3s ease;
-}
+  .ios-list-item {
+    @apply flex items-center justify-between px-4 py-3 border-b border-system-border last:border-none bg-system-card transition-colors duration-300;
+  }
 
-.ios-list-item:last-child {
-  border-bottom: none;
-}
+  /* Inputs */
+  .ios-input {
+    @apply bg-transparent border-none text-base text-system-text font-sans outline-none w-full appearance-none;
+  }
 
-.ios-input {
-  -webkit-appearance: none;
-  background: transparent;
-  border: none;
-  font-size: 1rem;
-  color: var(--text-primary);
-  font-family: inherit;
-  outline: none;
-  width: 100%;
-}
+  .ios-native-select {
+    @apply appearance-none bg-transparent border-none text-base font-sans text-system-text outline-none cursor-pointer p-1;
+  }
 
-.ios-native-select option {
-  color: var(--text-primary);
-  background: var(--bg-secondary);
-}
+  /* Modais e Toasts */
+  .ios-modal-overlay {
+    @apply fixed inset-0 bg-black/40 flex items-center justify-center z-[1000] p-4 backdrop-blur-sm animate-fade-in;
+  }
 
-.ios-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-  backdrop-filter: blur(3px);
-  animation: fadeIn 0.2s ease;
-}
-
-.ios-modal {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 400px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
-  animation: scaleUp 0.2s ease;
-}
-
-.ios-modal-lg {
-  max-width: 600px;
-  background: var(--bg-primary);
-}
-
-.ios-modal-header {
-  padding: 1.25rem;
-  border-bottom: 1px solid var(--border-color);
-  font-weight: 700;
-  font-size: 1.1rem;
-  text-align: center;
-  background: var(--bg-secondary);
-  border-top-left-radius: var(--radius-lg);
-  border-top-right-radius: var(--radius-lg);
-}
-
-.ios-modal-content {
-  padding: 1.5rem;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.ios-modal-footer {
-  padding: 1rem;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  border-bottom-left-radius: var(--radius-lg);
-  border-bottom-right-radius: var(--radius-lg);
-}
-
-.ios-toast-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  border-radius: var(--radius-md);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  padding: 1rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid var(--border-color);
-  border-left: 4px solid var(--system-blue);
-}
-
-.ios-toast-container.success {
-  border-left-color: var(--system-green);
-}
-
-.ios-toast-container.error {
-  border-left-color: var(--system-red);
-}
-
-.ios-toast-summary {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--text-primary);
-}
-
-.ios-toast-detail {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-
-@media (max-width: 600px) {
   .ios-modal {
-    max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px);
-  }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
+    @apply bg-system-card rounded-2xl w-full max-w-[400px] max-h-[90vh] flex flex-col shadow-2xl animate-scale-up;
   }
 
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+  .ios-modal-lg {
+    @apply max-w-[600px] bg-system-bg;
   }
 
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scaleUp {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
+  .ios-modal-xl {
+    @apply max-w-[1200px] h-[90vh];
   }
 
-  to {
-    transform: scale(1);
-    opacity: 1;
+  .ios-modal-header {
+    @apply p-5 border-b border-system-border font-bold text-lg text-center rounded-t-2xl bg-system-card;
   }
-}
 
-[data-theme="dark"] .bg-white {
-  background-color: var(--system-card) !important;
-}
+  .ios-modal-content {
+    @apply p-6 overflow-y-auto flex-1;
+  }
 
-[data-theme="dark"] .bg-gray-50,
-[data-theme="dark"] .bg-gray-100 {
-  background-color: #2c2c2e !important;
-}
+  .ios-modal-footer {
+    @apply p-4 border-t border-system-border flex justify-between gap-2 rounded-b-2xl bg-system-card;
+  }
 
-[data-theme="dark"] .bg-blue-50 {
-  background-color: rgba(10, 132, 255, 0.15) !important;
-}
+  .ios-toast-container {
+    @apply fixed top-5 right-5 z-[9999] bg-white/90 backdrop-blur-md rounded-[10px] shadow-lg px-5 py-4 flex flex-col gap-1 border border-system-border border-l-4 border-l-system-blue animate-slide-in;
+  }
 
-[data-theme="dark"] .text-gray-400,
-[data-theme="dark"] .text-gray-500 {
-  color: var(--system-text-sec) !important;
-}
+  /* Ajuste manual para o toast no modo escuro não usar cor estrita branca */
+  [data-theme="dark"] .ios-toast-container {
+    @apply bg-[#1c1c1e]/90;
+  }
 
-[data-theme="dark"] .text-gray-600 {
-  color: #ebebf5 !important;
+  .ios-toast-container.success {
+    @apply border-l-system-green;
+  }
+
+  .ios-toast-container.error {
+    @apply border-l-system-red;
+  }
 }

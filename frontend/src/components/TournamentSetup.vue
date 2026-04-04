@@ -1,5 +1,5 @@
 <template>
-  <div class="setup-container max-w-content pb-5">
+  <div class="max-w-[600px] mx-auto pb-12">
     <div
       v-if="toastMessage"
       class="ios-toast-container"
@@ -9,8 +9,8 @@
       <div class="ios-toast-detail">{{ toastMessage.detail }}</div>
     </div>
 
-    <header class="ios-page-header px-3 pt-4 pb-2">
-      <div class="flex justify-content-between align-items-center mb-2">
+    <header class="px-4 pt-8 pb-2">
+      <div class="flex justify-between items-center mb-2">
         <button
           class="ios-btn ios-btn-text p-0 m-0"
           @click="goToLeague"
@@ -18,11 +18,11 @@
           <i class="pi pi-chevron-left"></i> Voltar
         </button>
       </div>
-      <h1 class="ios-large-title">Configuração</h1>
-      <p class="text-gray-500 text-sm mt-1">Defina o formato e convoque os jogadores.</p>
+      <h1 class="text-3xl font-bold tracking-tight">Configuração</h1>
+      <p class="text-system-gray text-sm mt-1">Defina o formato e convoque os jogadores.</p>
     </header>
 
-    <div class="px-3">
+    <div class="px-4">
       <div class="ios-grouped-section">
         <div class="ios-grouped-label">FORMATO DO TORNEIO</div>
         <div class="ios-grouped-list">
@@ -33,7 +33,7 @@
               v-model.number="playersPerTable"
               min="2"
               max="10"
-              class="ios-input text-right w-4rem text-blue-500 font-bold"
+              class="ios-input text-right w-16 text-system-blue font-bold"
             />
           </div>
           <div class="ios-list-item">
@@ -42,7 +42,7 @@
               type="number"
               v-model.number="roundCount"
               min="1"
-              class="ios-input text-right w-4rem text-blue-500 font-bold"
+              class="ios-input text-right w-16 text-system-blue font-bold"
             />
           </div>
         </div>
@@ -69,11 +69,11 @@
       </div>
 
       <div class="ios-grouped-section">
-        <div class="ios-grouped-label flex justify-content-between align-items-end">
+        <div class="ios-grouped-label flex justify-between items-end">
           <span>ELENCO GERAL</span>
           <span
-            :class="players.length >= playersPerTable ? 'text-blue-500' : 'text-orange-500'"
-            style="text-transform: none; font-size: 0.75rem;"
+            :class="players.length >= playersPerTable ? 'text-system-blue' : 'text-system-orange'"
+            class="normal-case text-xs"
           >
             {{ players.length }} Selecionados
           </span>
@@ -81,23 +81,26 @@
 
         <div
           v-if="allAdminPlayers.length === 0"
-          class="ios-grouped-list p-4 text-center text-gray-500 text-sm"
+          class="ios-grouped-list p-6 text-center text-system-gray text-sm"
         >
           O elenco está vazio. Adicione acima.
         </div>
         <div
           v-else
-          class="chips-grid"
+          class="grid grid-cols-2 sm:grid-cols-3 gap-2 py-2"
         >
           <button
             v-for="player in allAdminPlayers"
             :key="player.id"
-            class="ios-chip"
-            :class="{ 'selected': isPlaying(player) }"
+            class="bg-system-card dark:bg-system-cardDark border border-system-border dark:border-system-borderDark rounded-full px-3 py-2 flex items-center gap-2 text-sm font-medium transition-colors"
+            :class="isPlaying(player) ? 'bg-system-blue/10 border-system-blue text-system-blue' : 'text-system-text hover:border-system-blue'"
             @click="togglePlayer(player)"
           >
-            <i :class="isPlaying(player) ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
-            <span>{{ player.name }}</span>
+            <i
+              :class="isPlaying(player) ? 'pi pi-check-circle' : 'pi pi-circle'"
+              class="text-lg"
+            ></i>
+            <span class="truncate">{{ player.name }}</span>
           </button>
         </div>
       </div>
@@ -113,11 +116,11 @@
             :key="player.id"
             class="ios-list-item"
           >
-            <div class="flex flex-column">
+            <div class="flex flex-col">
               <span class="font-medium">{{ player.name }}</span>
               <span
                 v-if="player.deck_name"
-                class="text-xs text-gray-500 mt-1"
+                class="text-xs text-system-gray mt-1"
               >{{ player.deck_name }}</span>
             </div>
             <button
@@ -130,17 +133,16 @@
         </div>
       </div>
 
-      <div class="mt-4 mb-4 flex flex-column align-items-center">
+      <div class="mt-6 mb-8 flex flex-col items-center">
         <button
-          class="ios-btn ios-btn-primary w-full py-3"
-          style="font-size: 1.1rem; border-radius: 14px;"
+          class="ios-btn ios-btn-primary w-full py-3.5 text-lg rounded-xl"
           @click="handleStartTournament"
           :disabled="players.length < playersPerTable || isProcessing"
         >
           Iniciar Etapa ({{ players.length }} Jogadores)
         </button>
         <p
-          class="text-orange-500 text-xs mt-2 font-medium"
+          class="text-system-orange text-xs mt-2 font-medium"
           v-if="players.length < playersPerTable"
         >
           Mínimo de {{ playersPerTable }} jogadores para este formato.
@@ -155,11 +157,8 @@
     >
       <div class="ios-modal">
         <div class="ios-modal-header">Deck de {{ currentEditingPlayerName }}</div>
-        <div
-          class="ios-modal-content p-0"
-          style="background: var(--bg-primary);"
-        >
-          <div class="ios-grouped-section mt-4 mx-3">
+        <div class="ios-modal-content p-0 bg-system-bg dark:bg-system-bgDark">
+          <div class="ios-grouped-section mt-6 mx-4">
             <div class="ios-grouped-list">
               <div class="ios-list-item">
                 <input
@@ -180,9 +179,9 @@
             </div>
           </div>
         </div>
-        <div class="ios-modal-footer flex justify-content-between">
+        <div class="ios-modal-footer">
           <button
-            class="ios-btn ios-btn-text text-red-500"
+            class="ios-btn ios-btn-text text-system-red"
             @click="clearTempDeck"
           >Limpar</button>
           <div class="flex gap-2">
@@ -207,7 +206,6 @@ import { useRouter } from 'vue-router'
 import { useTournament } from '../composables/useTournament'
 
 const router = useRouter()
-
 const toastMessage = ref(null)
 let toastTimeout = null
 function showToast(options) {
@@ -296,160 +294,3 @@ async function handleStartTournament() {
   isProcessing.value = false
 }
 </script>
-
-<style scoped>
-.max-w-content {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.flex {
-  display: flex;
-}
-
-.flex-column {
-  flex-direction: column;
-}
-
-.justify-content-between {
-  justify-content: space-between;
-}
-
-.align-items-center {
-  align-items: center;
-}
-
-.align-items-end {
-  align-items: flex-end;
-}
-
-.p-0 {
-  padding: 0;
-}
-
-.m-0 {
-  margin: 0;
-}
-
-.mt-1 {
-  margin-top: 0.25rem;
-}
-
-.mt-2 {
-  margin-top: 0.5rem;
-}
-
-.mt-4 {
-  margin-top: 1.5rem;
-}
-
-.mt-5 {
-  margin-top: 2.5rem;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-
-.mb-4 {
-  margin-bottom: 1.5rem;
-}
-
-.mb-5 {
-  margin-bottom: 2.5rem;
-}
-
-.px-3 {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-.py-3 {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-
-.w-full {
-  width: 100%;
-}
-
-.w-4rem {
-  width: 4rem;
-}
-
-.text-right {
-  text-align: right;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-sm {
-  font-size: 0.85rem;
-}
-
-.text-xs {
-  font-size: 0.75rem;
-}
-
-.font-medium {
-  font-weight: 500;
-}
-
-.font-bold {
-  font-weight: 700;
-}
-
-.text-gray-500 {
-  color: var(--system-gray);
-}
-
-.text-blue-500 {
-  color: var(--system-blue);
-}
-
-.text-orange-500 {
-  color: var(--system-orange);
-}
-
-.text-red-500 {
-  color: var(--system-red);
-}
-
-.bg-white {
-  background: var(--bg-secondary);
-}
-
-.chips-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 0.5rem;
-  padding: 1rem 0;
-}
-
-.ios-chip {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  padding: 0.5rem 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.ios-chip:hover {
-  border-color: var(--system-blue);
-}
-
-.ios-chip.selected {
-  background: rgba(0, 122, 255, 0.1);
-  border-color: var(--system-blue);
-  color: var(--system-blue);
-}
-</style>
