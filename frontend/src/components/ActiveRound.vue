@@ -55,8 +55,11 @@
               v-for="player in table.players"
               :key="player.id"
               class="ios-list-item"
+              :class="table.status === 'completed' ? 'opacity-70' : ''"
             >
-              <span class="font-medium">{{ player.name }}</span>
+              <span class="font-medium flex items-center">{{ player.name }} <span
+                  class="text-[10px] text-system-gray font-mono ml-1.5 opacity-60"
+                >#{{ shortId(player.id) }}</span></span>
               <span
                 v-if="table.status === 'completed'"
                 class="font-bold text-system-blue"
@@ -75,7 +78,7 @@
                 class="ios-btn ios-btn-text w-full py-3 text-system-gray"
                 @click="openResultDialog(index, true)"
               >
-                Editar Placar
+                <i class="pi pi-pencil text-xs mr-1"></i> Editar Placar
               </button>
             </div>
           </div>
@@ -109,8 +112,13 @@
       @click.self="showResultDialog = false"
     >
       <div class="ios-modal">
-        <div class="ios-modal-header">Placar - Mesa {{ selectedTable !== null ? currentTables[selectedTable]?.number :
-          '' }}</div>
+        <div
+          class="ios-modal-header"
+          :class="isEditingResult ? 'bg-system-orange text-white rounded-t-2xl' : 'bg-system-card rounded-t-2xl'"
+        >
+          {{ isEditingResult ? '✏️ Editando Placar' : 'Registrar Placar' }} - Mesa {{ selectedTable !== null ?
+            currentTables[selectedTable]?.number : '' }}
+        </div>
         <div class="ios-modal-content p-0 bg-system-bg dark:bg-system-bgDark">
           <div
             v-if="selectedTable !== null"
@@ -122,7 +130,9 @@
                 :key="player.id"
                 class="ios-list-item flex-col items-start py-4"
               >
-                <span class="font-bold mb-3">{{ player.name }}</span>
+                <span class="font-bold mb-3 flex items-center">{{ player.name }} <span
+                    class="text-[10px] text-system-gray font-mono ml-1.5 opacity-60"
+                  >#{{ shortId(player.id) }}</span></span>
                 <div class="flex w-full gap-2 flex-wrap">
                   <button
                     v-for="pos in currentTables[selectedTable].players.length"
@@ -139,7 +149,7 @@
           </div>
           <div
             v-if="resultsError"
-            class="text-system-red text-center text-sm font-bold mx-4 mb-4"
+            class="text-system-red text-center text-sm font-bold px-4 mb-4"
           >
             <i class="pi pi-exclamation-triangle"></i> {{ resultsError }}
           </div>
@@ -202,20 +212,23 @@
                 <div
                   v-for="(slotId, sIndex) in table.slots"
                   :key="sIndex"
-                  class="ios-list-item px-3 py-1"
+                  class="ios-list-item px-3 py-1.5"
+                  :class="!table.slots[sIndex] ? 'bg-system-orange/5' : ''"
                 >
                   <select
                     v-model="table.slots[sIndex]"
-                    class="ios-native-select flex-1 py-2"
+                    class="ios-native-select flex-1 py-2 text-sm min-w-0 transition-all"
+                    :class="!table.slots[sIndex] ? 'bg-system-orange/10 text-system-orange font-bold px-2 rounded-md border border-system-orange border-dashed' : ''"
                     @change="(e) => handlePlayerMove(tIndex, sIndex, e.target.value)"
                   >
-                    <option :value="null">Selecionar jogador...</option>
+                    <option :value="null">⚠️ Vaga Aberta (Selecione...)</option>
                     <option
                       v-for="player in players"
                       :key="player.id"
                       :value="player.id"
                     >
-                      {{ player.name }} {{ getPlayerTable(player.id) ? `(Mesa ${getPlayerTable(player.id)})` : '' }}
+                      {{ player.name }} #{{ shortId(player.id) }} {{ getPlayerTable(player.id) ? `(Mesa
+                      ${getPlayerTable(player.id)})` : '' }}
                     </option>
                   </select>
                   <button
@@ -312,16 +325,15 @@
               >
                 <span
                   class="font-bold text-lg w-8"
-                  :class="{
-                    'text-foil text-2xl': index === 0,
-                    'text-system-gray': index === 1,
-                    'text-[#b45309]': index === 2
-                  }"
+                  :class="{ 'text-foil text-2xl': index === 0, 'text-system-gray': index === 1, 'text-[#b45309]': index === 2 }"
                 >{{ index + 1 }}º</span>
                 <span
-                  class="flex-1 ml-2 font-medium"
+                  class="flex-1 ml-2 font-medium flex items-center"
                   :class="index === 0 ? 'text-foil text-xl' : ''"
-                >{{ player.name }}</span>
+                >
+                  {{ player.name }}
+                  <span class="text-sm ml-1.5 font-mono opacity-60">#{{ shortId(player.id) }}</span>
+                </span>
                 <i
                   v-if="index === 0"
                   class="pi pi-crown text-foil ml-2 mr-2"
@@ -356,6 +368,10 @@ function showToast(options) {
   if (toastTimeout) clearTimeout(toastTimeout)
   toastMessage.value = options
   toastTimeout = setTimeout(() => { toastMessage.value = null }, options.life || 3000)
+}
+
+function shortId(id) {
+  return id ? String(id).split('-')[0].substring(0, 4).toUpperCase() : ''
 }
 
 const {

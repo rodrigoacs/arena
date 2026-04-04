@@ -19,16 +19,14 @@
 
     <template v-else>
       <header
-        class="px-4 pt-6 pb-4 flex justify-between items-center w-full sticky top-0 z-50 bg-system-bg/80 dark:bg-system-bgDark/80 backdrop-blur-md border-b border-system-border dark:border-system-borderDark/50"
+        class="pt-10 pb-6 px-4 text-center border-b border-system-border dark:border-system-borderDark bg-system-card dark:bg-system-cardDark"
       >
-        <div class="flex items-center justify-between gap-2 max-w-[1000px] mx-auto w-full">
-
-          <h1 class="text-3xl font-bold tracking-tight m-0">{{ league.name }}</h1>
-          <p
-            v-if="league.season"
-            class="text-system-gray text-sm font-medium mt-2"
-          >Temporada {{ league.season }}</p>
-        </div>
+        <i class="pi pi-bolt text-system-blue text-4xl mb-3"></i>
+        <h1 class="text-3xl font-bold tracking-tight m-0">{{ league.name }}</h1>
+        <p
+          v-if="league.season"
+          class="text-system-gray text-sm font-medium mt-2"
+        >Temporada {{ league.season }}</p>
       </header>
 
       <main class="max-w-[900px] mx-auto px-4 py-8">
@@ -70,7 +68,13 @@
                   <td
                     class="p-3 font-bold text-lg whitespace-nowrap"
                     :class="index === 0 ? 'text-foil' : ''"
-                  >{{ row.player_name }}</td>
+                  >
+                    {{ row.player_name }}
+                    <span
+                      v-if="row.player_id"
+                      class="text-[10px] text-system-gray ml-1 font-mono opacity-60"
+                    >#{{ shortId(row.player_id) }}</span>
+                  </td>
                   <td class="p-3 text-center"><span
                       class="bg-system-blue/10 text-system-blue px-2 py-1 rounded font-bold"
                     >{{ row.league_points }}</span></td>
@@ -182,6 +186,10 @@ const league = ref({})
 const ranking = ref([])
 const tournaments = ref([])
 const expandedTournaments = ref({})
+
+function shortId(id) {
+  return id ? String(id).split('-')[0].substring(0, 4).toUpperCase() : ''
+}
 
 onMounted(async () => {
   const leagueId = route.params.id

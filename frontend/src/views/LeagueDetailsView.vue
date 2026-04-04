@@ -114,7 +114,13 @@
                   class="p-3 font-bold text-lg max-w-[180px] sm:max-w-[250px] truncate"
                   :title="row.player_name"
                   :class="index === 0 ? 'text-foil' : ''"
-                >{{ row.player_name }}</td>
+                >
+                  {{ row.player_name }}
+                  <span
+                    v-if="row.player_id"
+                    class="text-[10px] text-system-gray ml-1 font-mono opacity-60"
+                  >#{{ shortId(row.player_id) }}</span>
+                </td>
                 <td class="p-3 text-center text-system-blue font-bold text-lg">{{ row.league_points }}</td>
                 <td class="p-3 text-center text-mythic font-bold text-lg">{{ row.total_golds }}</td>
                 <td class="p-3 text-center text-rare font-bold text-lg">{{ row.total_silvers }}</td>
@@ -345,7 +351,8 @@
                     <div
                       v-for="(seat, sIndex) in table.seats"
                       :key="sIndex"
-                      class="ios-list-item px-3 py-1"
+                      class="ios-list-item px-3 py-1.5"
+                      :class="!seat.player_id ? 'bg-system-orange/5' : ''"
                     >
                       <span
                         class="font-bold w-8 text-center text-sm"
@@ -353,14 +360,17 @@
                       >{{ seat.pos }}º</span>
                       <select
                         v-model="seat.player_id"
-                        class="ios-native-select flex-1 py-2 text-sm min-w-0"
+                        class="ios-native-select flex-1 py-2 text-sm min-w-0 transition-all"
+                        :class="!seat.player_id ? 'bg-system-orange/10 text-system-orange font-bold px-2 rounded-md border border-system-orange border-dashed' : ''"
                       >
-                        <option :value="null">Selecionar jogador...</option>
+                        <option :value="null">⚠️ Vaga Aberta...</option>
                         <option
                           v-for="player in getAvailablePlayers(rIndex, seat.player_id)"
                           :key="player.id"
                           :value="player.id"
-                        >{{ player.name }}</option>
+                        >
+                          {{ player.name }} #{{ shortId(player.id) }}
+                        </option>
                       </select>
                       <button
                         v-if="table.seats.length > 2"
@@ -390,9 +400,11 @@
                   :key="player.id"
                   class="ios-grouped-list"
                 >
-                  <div class="ios-list-item bg-black/5 dark:bg-white/5 py-2 font-bold text-sm"><i
-                      class="pi pi-user mr-2 text-system-gray"
-                    ></i>{{ player.name }}</div>
+                  <div class="ios-list-item bg-black/5 dark:bg-white/5 py-2 font-bold text-sm">
+                    <i class="pi pi-user mr-2 text-system-gray"></i>{{ player.name }}
+                    <span class="text-[10px] text-system-gray ml-1.5 font-mono opacity-60">#{{ shortId(player.id)
+                      }}</span>
+                  </div>
                   <div class="ios-list-item py-1"><input
                       type="text"
                       v-model="importDecks[player.id].name"
@@ -427,6 +439,10 @@ function showToast(options) {
   if (toastTimeout) clearTimeout(toastTimeout)
   toastMessage.value = options
   toastTimeout = setTimeout(() => { toastMessage.value = null }, options.life || 3000)
+}
+
+function shortId(id) {
+  return id ? String(id).split('-')[0].substring(0, 4).toUpperCase() : ''
 }
 
 const ranking = ref([])
@@ -567,7 +583,7 @@ function copyPublicLink() {
 
 function exportCSV() {
   if (!ranking.value || ranking.value.length === 0) return
-  let csvContent = "data:text/csv;charset=utf-8,Posição,Jogador,Pontos,1º Lugar,2º Lugar,3º Lugar,Média de Posição,Torneios Jogados\n"
+  let csvContent = "data:text/csv;charset=utf-8,Posição,Jogador,Pontos,1º Lugar,2º Lugar,3º Lugar,Média de Posição,Etapas Jogadas\n"
   ranking.value.forEach((row, i) => { csvContent += `${i + 1},"${row.player_name}",${row.league_points},${row.total_golds},${row.total_silvers},${row.total_bronzes},${row.avg_position || '-'},${row.tournaments_played}\n` })
   const link = document.createElement("a"); link.href = encodeURI(csvContent); link.download = `ranking_${new Date().toISOString().split('T')[0]}.csv`; link.click()
 }

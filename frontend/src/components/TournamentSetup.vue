@@ -87,20 +87,23 @@
         </div>
         <div
           v-else
-          class="grid grid-cols-2 sm:grid-cols-3 gap-2 py-2"
+          class="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2"
         >
           <button
             v-for="player in allAdminPlayers"
             :key="player.id"
-            class="bg-system-card dark:bg-system-cardDark border border-system-border dark:border-system-borderDark rounded-full px-3 py-2 flex items-center gap-2 text-sm font-medium transition-colors"
-            :class="isPlaying(player) ? 'bg-system-blue/10 border-system-blue text-system-blue' : 'text-system-text hover:border-system-blue'"
+            class="bg-system-card dark:bg-system-cardDark border border-system-border dark:border-system-borderDark rounded-xl px-3 py-2.5 flex items-center justify-between gap-2 text-sm transition-all"
+            :class="isPlaying(player) ? 'bg-system-blue/10 border-system-blue text-system-blue font-bold shadow-sm' : 'text-system-text hover:border-system-blue font-medium'"
             @click="togglePlayer(player)"
           >
-            <i
-              :class="isPlaying(player) ? 'pi pi-check-circle' : 'pi pi-circle'"
-              class="text-lg"
-            ></i>
-            <span class="truncate">{{ player.name }}</span>
+            <div class="flex items-center gap-2 truncate">
+              <i
+                :class="isPlaying(player) ? 'pi pi-check-circle' : 'pi pi-circle'"
+                class="text-lg shrink-0"
+              ></i>
+              <span class="truncate">{{ player.name }}</span>
+            </div>
+            <span class="text-[10px] font-mono opacity-50 shrink-0">#{{ shortId(player.id) }}</span>
           </button>
         </div>
       </div>
@@ -117,16 +120,20 @@
             class="ios-list-item"
           >
             <div class="flex flex-col">
-              <span class="font-medium">{{ player.name }}</span>
+              <span class="font-medium flex items-center">{{ player.name }} <span
+                  class="text-[10px] text-system-gray ml-1.5 font-mono opacity-60"
+                >#{{ shortId(player.id) }}</span></span>
               <span
                 v-if="player.deck_name"
                 class="text-xs text-system-gray mt-1"
               >{{ player.deck_name }}</span>
             </div>
             <button
-              class="ios-btn ios-btn-text p-2 text-sm"
+              class="ios-btn ios-btn-text p-2 text-sm font-bold transition-colors"
+              :class="player.deck_name ? 'text-system-orange' : 'text-system-blue'"
               @click="openDeckInput(index)"
             >
+              <i :class="player.deck_name ? 'pi pi-pencil' : 'pi pi-plus'"></i>
               {{ player.deck_name ? 'Editar' : 'Adicionar' }}
             </button>
           </div>
@@ -212,6 +219,10 @@ function showToast(options) {
   if (toastTimeout) clearTimeout(toastTimeout)
   toastMessage.value = options
   toastTimeout = setTimeout(() => { toastMessage.value = null }, options.life || 3000)
+}
+
+function shortId(id) {
+  return id ? String(id).split('-')[0].substring(0, 4).toUpperCase() : ''
 }
 
 const {

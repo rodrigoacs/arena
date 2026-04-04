@@ -54,7 +54,6 @@
 
       <div class="ios-grouped-section">
         <div class="ios-grouped-label">Minhas Ligas Ativas</div>
-
         <div
           v-if="isLoading"
           class="ios-grouped-list"
@@ -166,7 +165,7 @@
                 >Adicionar</button>
               </div>
             </div>
-            <p class="text-xs text-system-gray mt-2 mx-2">Este elenco estará disponível em todas as ligas.</p>
+            <p class="text-xs text-system-gray mt-2 px-2">Este elenco estará disponível em todas as ligas.</p>
           </div>
 
           <div class="ios-grouped-section px-4">
@@ -188,25 +187,30 @@
               >
                 <div
                   v-if="editingPlayerId === player.id"
-                  class="flex w-full items-center gap-2"
+                  class="flex w-full items-center gap-2 bg-system-blue/10 border border-system-blue rounded-lg p-2 shadow-sm transition-all"
                 >
                   <input
                     type="text"
                     v-model="editPlayerName"
-                    class="ios-input"
+                    class="ios-input font-bold text-system-blue flex-1"
                     @keydown.enter="saveEdit(player.id)"
+                    autofocus
                   />
-                  <i
-                    class="pi pi-check text-system-green cursor-pointer text-lg"
+                  <button
+                    class="ios-icon-btn bg-system-green text-white border-none w-8 h-8 shrink-0 shadow-md"
                     @click="saveEdit(player.id)"
-                  ></i>
-                  <i
-                    class="pi pi-times text-system-gray cursor-pointer text-lg"
+                  ><i class="pi pi-check"></i></button>
+                  <button
+                    class="ios-icon-btn bg-system-gray text-white border-none w-8 h-8 shrink-0 shadow-md"
                     @click="cancelEdit"
-                  ></i>
+                  ><i class="pi pi-times"></i></button>
                 </div>
                 <template v-else>
-                  <span class="font-medium">{{ player.name }}</span>
+                  <span class="font-medium flex items-center">
+                    {{ player.name }}
+                    <span class="text-[10px] text-system-gray ml-1.5 font-mono opacity-60">#{{ shortId(player.id)
+                      }}</span>
+                  </span>
                   <div class="flex gap-4">
                     <i
                       class="pi pi-pencil text-system-blue cursor-pointer"
@@ -273,6 +277,10 @@ function showToast(options) {
   if (toastTimeout) clearTimeout(toastTimeout)
   toastMessage.value = options
   toastTimeout = setTimeout(() => { toastMessage.value = null }, options.life || 3000)
+}
+
+function shortId(id) {
+  return id ? String(id).split('-')[0].substring(0, 4).toUpperCase() : ''
 }
 
 const leagues = ref([])

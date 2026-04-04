@@ -48,7 +48,10 @@
           <div
             class="flex-1 px-2 font-medium text-sm truncate min-w-0"
             :title="player.name"
-          >{{ player.name }}</div>
+          >
+            {{ player.name }}
+            <span class="text-[10px] text-system-gray opacity-60 font-mono ml-1">#{{ shortId(player.id) }}</span>
+          </div>
           <div class="font-bold text-system-blue w-10 text-right">{{ player.points || 0 }}</div>
           <div class="flex gap-2 justify-end text-xs font-bold text-system-gray min-w-[70px]">
             <span :title="`1º Lugares: ${(player.matches || []).filter(m => m.position === 1).length}`"><i
@@ -67,4 +70,8 @@
 <script setup>
 import { useTournament } from '../composables/useTournament'
 const { players, sortedPlayers } = useTournament()
+
+function shortId(id) {
+  return id ? String(id).split('-')[0].substring(0, 4).toUpperCase() : ''
+}
 </script>
