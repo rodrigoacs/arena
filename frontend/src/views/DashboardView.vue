@@ -1,17 +1,26 @@
 <template>
   <div class="dashboard-page">
+    <div
+      v-if="toastMessage"
+      class="ios-toast-container"
+      :class="toastMessage.severity"
+    >
+      <div class="ios-toast-summary">{{ toastMessage.summary }}</div>
+      <div class="ios-toast-detail">{{ toastMessage.detail }}</div>
+    </div>
+
     <header class="dashboard-header">
       <div class="header-content">
         <div class="title-area">
           <i class="pi pi-bolt"></i>
           <h1>Painel do Organizador</h1>
         </div>
-        <Button
-          label="Sair"
-          icon="pi pi-sign-out"
-          class="p-button-text p-button-danger"
+        <button
+          class="ios-btn ios-btn-text text-red-500"
           @click="handleLogout"
-        />
+        >
+          <i class="pi pi-sign-out"></i> Sair
+        </button>
       </div>
     </header>
 
@@ -20,17 +29,18 @@
         <div class="section-header">
           <h2>Minhas Ligas</h2>
           <div class="header-actions">
-            <Button
-              label="Gerenciar Elenco"
-              icon="pi pi-users"
-              class="p-button-outlined p-button-secondary mr-2"
+            <button
+              class="ios-btn ios-btn-secondary-outlined mr-2"
               @click="openRosterModal"
-            />
-            <Button
-              label="Nova Liga"
-              icon="pi pi-plus"
+            >
+              <i class="pi pi-users"></i> Gerenciar Elenco
+            </button>
+            <button
+              class="ios-btn ios-btn-primary"
               @click="showCreateDialog = true"
-            />
+            >
+              <i class="pi pi-plus"></i> Nova Liga
+            </button>
           </div>
         </div>
 
@@ -42,7 +52,7 @@
             class="pi pi-spin pi-spinner"
             style="font-size: 2rem"
           ></i>
-          <p>Carregando as suas ligas...</p>
+          <p>A carregar as suas ligas...</p>
         </div>
 
         <div
@@ -51,12 +61,13 @@
         >
           <i class="pi pi-flag"></i>
           <h3>Nenhuma liga ativa</h3>
-          <p>Crie sua primeira liga para começar a gerenciar os torneios e rankings da sua comunidade.</p>
-          <Button
-            label="Criar Primeira Liga"
-            class="p-button-outlined"
+          <p>Crie a sua primeira liga para começar a gerir os torneios e rankings da sua comunidade.</p>
+          <button
+            class="ios-btn ios-btn-outlined"
             @click="showCreateDialog = true"
-          />
+          >
+            Criar Primeira Liga
+          </button>
         </div>
 
         <div
@@ -85,211 +96,234 @@
       </div>
     </main>
 
-    <Dialog
-      v-model:visible="showCreateDialog"
-      header="Criar Nova Liga"
-      :style="{ width: '400px' }"
-      modal
+    <div
+      v-if="showCreateDialog"
+      class="ios-modal-overlay"
+      @click.self="showCreateDialog = false"
     >
-      <div class="p-fluid">
-        <div class="field mb-4">
-          <label
-            for="name"
-            class="font-bold block mb-2"
-          >Nome da Liga</label>
-          <InputText
-            id="name"
-            v-model="newLeague.name"
-            placeholder="Ex: Laje Wars"
-          />
+      <div class="ios-modal">
+        <div class="ios-modal-header text-center">Criar Nova Liga</div>
+        <div class="ios-modal-content">
+          <div class="apple-form-section">
+            <div class="apple-form-group">
+              <div class="apple-form-row">
+                <label>NOME DA LIGA</label>
+                <input
+                  type="text"
+                  v-model="newLeague.name"
+                  placeholder="Ex: Laje Wars"
+                  class="ios-input"
+                />
+              </div>
+              <div class="apple-form-row">
+                <label>TEMPORADA (OPCIONAL)</label>
+                <input
+                  type="text"
+                  v-model="newLeague.season"
+                  placeholder="Ex: 2026"
+                  class="ios-input"
+                />
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="field mb-2">
-          <label
-            for="season"
-            class="font-bold block mb-2"
-          >Temporada (Opcional)</label>
-          <InputText
-            id="season"
-            v-model="newLeague.season"
-            placeholder="Ex: 2026"
-          />
-        </div>
-      </div>
-      <template #footer>
-        <div class="flex justify-content-end gap-2 w-full mt-2">
-          <Button
-            label="Cancelar"
-            icon="pi pi-times"
+        <div class="ios-modal-footer flex justify-content-between">
+          <button
+            class="ios-btn ios-btn-text"
             @click="showCreateDialog = false"
-            class="p-button-text"
-          />
-          <Button
-            label="Criar Liga"
-            icon="pi pi-check"
+          >Cancelar</button>
+          <button
+            class="ios-btn ios-btn-primary"
             @click="handleCreateLeague"
             :disabled="!newLeague.name"
-          />
+          >
+            <i class="pi pi-check"></i> Criar Liga
+          </button>
         </div>
-      </template>
-    </Dialog>
+      </div>
+    </div>
 
-    <Dialog
-      v-model:visible="showRosterModal"
-      header="Gerenciar Elenco"
-      :style="{ width: '600px', maxWidth: '95vw' }"
-      modal
+    <div
+      v-if="showRosterModal"
+      class="ios-modal-overlay"
+      @click.self="showRosterModal = false"
     >
-      <div class="roster-workspace">
-
-        <div class="flex gap-3 mb-4 mt-2">
-          <InputText
-            v-model="newPlayerName"
-            placeholder="Adicionar novo jogador ao elenco..."
-            @keydown.enter="handleAddPlayer"
-            class="w-full"
-          />
-          <Button
-            icon="pi pi-plus"
-            label="Adicionar"
-            class="p-button-success"
-            @click="handleAddPlayer"
-            :loading="isSavingPlayer"
-            :disabled="!newPlayerName"
-            style="white-space: nowrap;"
-          />
-        </div>
-
-        <DataTable
-          :value="players"
-          :loading="isLoadingPlayers"
-          stripedRows
-          responsiveLayout="scroll"
-          class="roster-table"
-          scrollable
-          scrollHeight="400px"
+      <div class="ios-modal ios-modal-lg">
+        <div class="ios-modal-header text-center">Gerir Elenco</div>
+        <div
+          class="ios-modal-content"
+          style="background: var(--bg-primary);"
         >
-          <template #empty>
-            <div class="text-center p-4 text-gray-500">Nenhum jogador cadastrado no seu elenco.</div>
-          </template>
 
-          <Column
-            field="name"
-            header="Nome do Jogador"
-          >
-            <template #body="slotProps">
-              <div
-                v-if="editingPlayerId === slotProps.data.id"
-                class="flex gap-2 w-full"
+          <div class="roster-workspace">
+            <div class="flex gap-2 mb-4 mt-2 align-items-center">
+              <input
+                type="text"
+                v-model="newPlayerName"
+                placeholder="Adicionar novo jogador ao elenco..."
+                @keydown.enter="handleAddPlayer"
+                class="ios-input ios-input-bordered flex-1"
+              />
+              <button
+                class="ios-btn ios-btn-success flex-shrink-0"
+                @click="handleAddPlayer"
+                :disabled="!newPlayerName || isSavingPlayer"
               >
-                <InputText
-                  v-model="editPlayerName"
-                  class="p-inputtext-sm w-full"
-                  @keydown.enter="saveEdit(slotProps.data.id)"
-                />
-                <Button
-                  icon="pi pi-check"
-                  class="p-button-success p-button-sm"
-                  @click="saveEdit(slotProps.data.id)"
-                  v-tooltip="'Salvar'"
-                />
-                <Button
-                  icon="pi pi-times"
-                  class="p-button-secondary p-button-sm"
-                  @click="cancelEdit"
-                  v-tooltip="'Cancelar'"
-                />
-              </div>
-              <span
-                v-else
-                class="font-semibold"
-              >{{ slotProps.data.name }}</span>
-            </template>
-          </Column>
+                <i :class="isSavingPlayer ? 'pi pi-spin pi-spinner' : 'pi pi-plus'"></i> Adicionar
+              </button>
+            </div>
 
-          <Column
-            header="Ações"
-            style="width: 120px; text-align: center"
-          >
-            <template #body="slotProps">
-              <div
-                v-if="editingPlayerId !== slotProps.data.id"
-                class="flex gap-2 justify-content-end"
-              >
-                <Button
-                  icon="pi pi-pencil"
-                  class="p-button-rounded p-button-text p-button-sm"
-                  @click="startEdit(slotProps.data)"
-                  v-tooltip="'Editar Nome'"
-                />
-                <Button
-                  icon="pi pi-trash"
-                  class="p-button-rounded p-button-danger p-button-text p-button-sm"
-                  @click="confirmDelete(slotProps.data)"
-                  v-tooltip="'Excluir'"
-                />
+            <div class="apple-form-section">
+              <div class="apple-section-label">JOGADORES CADASTRADOS ({{ players.length }})</div>
+              <div class="apple-form-group roster-list-container">
+
+                <div
+                  v-if="isLoadingPlayers"
+                  class="text-center p-4 text-gray-500"
+                >
+                  <i class="pi pi-spin pi-spinner mr-2"></i> A carregar elenco...
+                </div>
+
+                <div
+                  v-else-if="players.length === 0"
+                  class="text-center p-4 text-gray-500"
+                >
+                  Nenhum jogador cadastrado no seu elenco.
+                </div>
+
+                <div
+                  v-else
+                  v-for="player in players"
+                  :key="player.id"
+                  class="apple-form-row align-items-center flex-row justify-content-between"
+                  style="padding: 0.75rem 1rem;"
+                >
+                  <div
+                    v-if="editingPlayerId === player.id"
+                    class="flex gap-2 w-full align-items-center"
+                  >
+                    <input
+                      type="text"
+                      v-model="editPlayerName"
+                      class="ios-input flex-1 border-1 surface-border border-round px-2 py-1"
+                      @keydown.enter="saveEdit(player.id)"
+                    />
+                    <button
+                      class="ios-icon-btn text-green-500"
+                      @click="saveEdit(player.id)"
+                      title="Salvar"
+                    >
+                      <i
+                        class="pi pi-check-circle"
+                        style="font-size: 1.2rem;"
+                      ></i>
+                    </button>
+                    <button
+                      class="ios-icon-btn text-gray-400"
+                      @click="cancelEdit"
+                      title="Cancelar"
+                    >
+                      <i
+                        class="pi pi-times-circle"
+                        style="font-size: 1.2rem;"
+                      ></i>
+                    </button>
+                  </div>
+
+                  <template v-else>
+                    <span
+                      class="font-semibold text-primary"
+                      style="font-size: 0.95rem;"
+                    >{{ player.name }}</span>
+                    <div class="flex gap-1">
+                      <button
+                        class="ios-icon-btn text-blue-500"
+                        @click="startEdit(player)"
+                        title="Editar Nome"
+                      >
+                        <i class="pi pi-pencil"></i>
+                      </button>
+                      <button
+                        class="ios-icon-btn text-red-500"
+                        @click="confirmDelete(player)"
+                        title="Excluir"
+                      >
+                        <i class="pi pi-trash"></i>
+                      </button>
+                    </div>
+                  </template>
+                </div>
+
               </div>
-            </template>
-          </Column>
-        </DataTable>
-      </div>
-      <template #footer>
-        <div class="flex justify-content-end w-full pt-2">
-          <Button
-            label="Fechar Janela"
-            icon="pi pi-times"
+            </div>
+          </div>
+        </div>
+        <div class="ios-modal-footer">
+          <button
+            class="ios-btn ios-btn-primary w-full"
             @click="showRosterModal = false"
-            class="p-button-text"
-          />
-        </div>
-      </template>
-    </Dialog>
-
-    <Dialog
-      v-model:visible="showDeleteConfirm"
-      header="Confirmar Exclusão"
-      :style="{ width: '450px' }"
-      modal
-    >
-      <div class="confirmation-content flex align-items-center gap-4 py-3">
-        <i
-          class="pi pi-exclamation-triangle text-red-500"
-          style="font-size: 2.5rem"
-        ></i>
-        <div>
-          <p class="m-0 text-lg">Deseja realmente excluir <strong>{{ playerToDelete?.name }}</strong>?</p>
-          <small class="text-red-500 font-bold block mt-2">Atenção: Todo o histórico deste jogador nos torneios será
-            apagado!</small>
+          >
+            Concluído
+          </button>
         </div>
       </div>
-      <template #footer>
-        <div class="flex justify-content-end gap-2 w-full mt-2">
-          <Button
-            label="Cancelar"
-            icon="pi pi-times"
-            @click="showDeleteConfirm = false"
-            class="p-button-text"
-          />
-          <Button
-            label="Excluir Definitivamente"
-            icon="pi pi-trash"
-            class="p-button-danger"
-            @click="handleDeletePlayer"
-            :loading="isDeleting"
-          />
+    </div>
+
+    <div
+      v-if="showDeleteConfirm"
+      class="ios-modal-overlay"
+      @click.self="showDeleteConfirm = false"
+    >
+      <div class="ios-modal">
+        <div class="ios-modal-header text-center">Confirmar Exclusão</div>
+        <div class="ios-modal-content">
+          <div class="flex align-items-center gap-4 py-3">
+            <i
+              class="pi pi-exclamation-triangle text-red-500"
+              style="font-size: 2.5rem"
+            ></i>
+            <div>
+              <p class="m-0 text-lg">Deseja realmente excluir <strong>{{ playerToDelete?.name }}</strong>?</p>
+              <small class="text-red-500 font-bold block mt-2">Atenção: Todo o histórico deste jogador nos torneios será
+                apagado!</small>
+            </div>
+          </div>
         </div>
-      </template>
-    </Dialog>
+        <div class="ios-modal-footer flex justify-content-between">
+          <button
+            class="ios-btn ios-btn-text"
+            @click="showDeleteConfirm = false"
+          >Cancelar</button>
+          <button
+            class="ios-btn ios-btn-danger"
+            @click="handleDeletePlayer"
+            :disabled="isDeleting"
+          >
+            <i :class="isDeleting ? 'pi pi-spin pi-spinner' : 'pi pi-trash'"></i> Excluir Definitivamente
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
 import { api } from '../services/api'
 
 const router = useRouter()
-const toast = useToast()
+
+// --- SISTEMA DE TOAST NATIVO ---
+const toastMessage = ref(null)
+let toastTimeout = null
+function showToast(options) {
+  if (toastTimeout) clearTimeout(toastTimeout)
+  toastMessage.value = options
+  toastTimeout = setTimeout(() => { toastMessage.value = null }, options.life || 3000)
+}
+// --------------------------------
 
 const leagues = ref([])
 const isLoading = ref(true)
@@ -322,7 +356,7 @@ async function loadLeagues() {
   try {
     leagues.value = await api.getAdminLeagues()
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar as ligas.', life: 3000 })
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar as ligas.', life: 3000 })
   } finally {
     isLoading.value = false
   }
@@ -331,12 +365,12 @@ async function loadLeagues() {
 async function handleCreateLeague() {
   try {
     await api.createLeague(newLeague.value.name, newLeague.value.season)
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Liga criada com sucesso!', life: 3000 })
+    showToast({ severity: 'success', summary: 'Sucesso', detail: 'Liga criada com sucesso!', life: 3000 })
     showCreateDialog.value = false
     newLeague.value = { name: '', season: '' }
     await loadLeagues()
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível criar a liga.', life: 3000 })
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Não foi possível criar a liga.', life: 3000 })
   }
 }
 
@@ -361,7 +395,7 @@ async function loadPlayers() {
   try {
     players.value = await api.getPlayers()
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao carregar elenco.', life: 3000 })
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Falha ao carregar elenco.', life: 3000 })
   } finally {
     isLoadingPlayers.value = false
   }
@@ -372,11 +406,11 @@ async function handleAddPlayer() {
   isSavingPlayer.value = true
   try {
     await api.createPlayer(newPlayerName.value.trim())
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Jogador adicionado ao elenco.', life: 3000 })
+    showToast({ severity: 'success', summary: 'Sucesso', detail: 'Jogador adicionado ao elenco.', life: 3000 })
     newPlayerName.value = ''
     await loadPlayers()
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Nome duplicado ou erro de servidor.', life: 3000 })
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Nome duplicado ou erro de servidor.', life: 3000 })
   } finally {
     isSavingPlayer.value = false
   }
@@ -399,11 +433,11 @@ async function saveEdit(id) {
   }
   try {
     await api.updatePlayer(id, editPlayerName.value.trim())
-    toast.add({ severity: 'success', summary: 'Atualizado', detail: 'Nome alterado com sucesso.', life: 3000 })
+    showToast({ severity: 'success', summary: 'Atualizado', detail: 'Nome alterado com sucesso.', life: 3000 })
     cancelEdit()
     await loadPlayers()
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível atualizar o nome.', life: 3000 })
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Não foi possível atualizar o nome.', life: 3000 })
   }
 }
 
@@ -417,12 +451,12 @@ async function handleDeletePlayer() {
   isDeleting.value = true
   try {
     await api.deletePlayer(playerToDelete.value.id)
-    toast.add({ severity: 'success', summary: 'Excluído', detail: 'Jogador e histórico removidos.', life: 3000 })
+    showToast({ severity: 'success', summary: 'Excluído', detail: 'Jogador e histórico removidos.', life: 3000 })
     showDeleteConfirm.value = false
     playerToDelete.value = null
     await loadPlayers()
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao excluir o jogador.', life: 3000 })
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Falha ao excluir o jogador.', life: 3000 })
   } finally {
     isDeleting.value = false
   }
@@ -494,6 +528,7 @@ async function handleDeletePlayer() {
   gap: 1rem;
 }
 
+/* Leagues Grid */
 .leagues-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -587,15 +622,319 @@ async function handleDeletePlayer() {
   margin-bottom: 1.5rem;
 }
 
-/* Modal Roster Styles */
-.roster-workspace {
+/* COMPONENTES NATIVOS */
+.ios-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.ios-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ios-btn-primary {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.ios-btn-primary:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.ios-btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.ios-btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.ios-btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.ios-btn-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.ios-btn-text {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.ios-btn-text:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.ios-btn-outlined {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.ios-btn-outlined:hover:not(:disabled) {
+  background: var(--bg-primary);
+}
+
+.ios-btn-secondary-outlined {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.ios-btn-secondary-outlined:hover:not(:disabled) {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.ios-icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.ios-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.ios-input {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+  width: 100%;
+}
+
+.ios-input:focus {
+  outline: none;
+}
+
+.ios-input-bordered {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.ios-input-bordered:focus {
+  border-color: var(--accent-primary);
+}
+
+/* TOAST NATIVO */
+.ios-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.25rem;
+  border-left: 4px solid var(--accent-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-color);
+  border-left-width: 4px;
+}
+
+.ios-toast-container.success {
+  border-left-color: #10b981;
+}
+
+.ios-toast-container.error {
+  border-left-color: #ef4444;
+}
+
+.ios-toast-summary {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.ios-toast-detail {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* MODAIS NATIVOS E FORMS HIG */
+.ios-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease;
+}
+
+.ios-modal {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: scaleUp 0.2s ease;
+}
+
+.ios-modal-lg {
+  max-width: 600px;
+}
+
+.ios-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.ios-modal-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ios-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 0.75rem;
+  background: var(--bg-primary);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.apple-form-section {
   display: flex;
   flex-direction: column;
 }
 
-:deep(.roster-table .p-datatable-wrapper) {
+.apple-section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  padding-left: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.apple-form-group {
+  background: var(--bg-secondary);
+  border-radius: 12px;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  overflow: hidden;
+}
+
+.apple-form-row {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.apple-form-row:last-child {
+  border-bottom: none;
+}
+
+.apple-form-row label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.apple-form-row .ios-input {
+  padding: 0.25rem 0 !important;
+}
+
+/* Estilos Específicos para a Lista de Elenco (Substitui DataTable) */
+.roster-workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.roster-list-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.roster-list-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.roster-list-container::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 10px;
 }
 
 @media (max-width: 600px) {

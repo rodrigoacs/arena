@@ -1,5 +1,14 @@
 <template>
   <div class="login-page">
+    <div
+      v-if="toastMessage"
+      class="ios-toast-container"
+      :class="toastMessage.severity"
+    >
+      <div class="ios-toast-summary">{{ toastMessage.summary }}</div>
+      <div class="ios-toast-detail">{{ toastMessage.detail }}</div>
+    </div>
+
     <div class="login-card">
       <div class="login-header">
         <div class="logo-circle">
@@ -17,13 +26,13 @@
           <label for="email">E-mail</label>
           <div class="input-wrapper">
             <i class="pi pi-envelope input-icon"></i>
-            <InputText
+            <input
               id="email"
               v-model="email"
               type="email"
               placeholder="admin@lajewars.com"
               required
-              class="full-width-input"
+              class="full-width-input ios-native-input"
             />
           </div>
         </div>
@@ -32,24 +41,33 @@
           <label for="password">Senha secreta</label>
           <div class="input-wrapper">
             <i class="pi pi-lock input-icon"></i>
-            <InputText
+            <input
               id="password"
               v-model="password"
               type="password"
               placeholder="••••••••"
               required
-              class="full-width-input"
+              class="full-width-input ios-native-input"
             />
           </div>
         </div>
 
-        <Button
+        <button
           type="submit"
-          label="Entrar na Arena"
-          icon="pi pi-sign-in"
-          class="p-button-lg login-btn"
-          :loading="isLoading"
-        />
+          class="ios-btn ios-btn-primary login-btn"
+          :disabled="isLoading"
+        >
+          <i
+            v-if="isLoading"
+            class="pi pi-spin pi-spinner"
+          ></i>
+          <i
+            v-else
+            class="pi pi-sign-in"
+          ></i>
+          <span v-if="!isLoading">Entrar na Arena</span>
+          <span v-else>Entrando...</span>
+        </button>
       </form>
     </div>
   </div>
@@ -58,14 +76,23 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
 import { api } from '../services/api'
+
+const router = useRouter()
+
+// --- SISTEMA DE TOAST NATIVO ---
+const toastMessage = ref(null)
+let toastTimeout = null
+function showToast(options) {
+  if (toastTimeout) clearTimeout(toastTimeout)
+  toastMessage.value = options
+  toastTimeout = setTimeout(() => { toastMessage.value = null }, options.life || 3000)
+}
+// --------------------------------
 
 const email = ref('')
 const password = ref('')
 const isLoading = ref(false)
-const router = useRouter()
-const toast = useToast()
 
 async function handleLogin() {
   if (!email.value || !password.value) return
@@ -73,11 +100,14 @@ async function handleLogin() {
   isLoading.value = true
   try {
     await api.login(email.value, password.value)
-    toast.add({ severity: 'success', summary: 'Acesso Liberado', detail: 'Bem-vindo de volta!', life: 3000 })
-    router.push({ name: 'dashboard' })
+    showToast({ severity: 'success', summary: 'Acesso Liberado', detail: 'Bem-vindo de volta!', life: 2000 })
+
+    // Pequeno atraso para o organizador ler a mensagem de sucesso antes de mudar de ecrã
+    setTimeout(() => {
+      router.push({ name: 'dashboard' })
+    }, 600)
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Acesso Negado', detail: error.message, life: 4000 })
-  } finally {
+    showToast({ severity: 'error', summary: 'Acesso Negado', detail: error.message || 'Credenciais inválidas', life: 4000 })
     isLoading.value = false
   }
 }
@@ -151,7 +181,7 @@ async function handleLogin() {
 }
 
 /* ==========================================================================
-   FORMULÁRIO E INPUTS BLINDADOS
+   FORMULÁRIO E INPUTS NATIVOS
    ========================================================================== */
 .login-form {
   display: flex;
@@ -173,7 +203,6 @@ async function handleLogin() {
   margin-left: 0.2rem;
 }
 
-/* Wrapper que segura o input e o ícone juntos */
 .input-wrapper {
   position: relative;
   width: 100%;
@@ -181,24 +210,27 @@ async function handleLogin() {
   align-items: center;
 }
 
-/* O ícone fica posicionado de forma absoluta dentro do wrapper */
 .input-icon {
   position: absolute;
   left: 1.25rem;
-  /* Distância da borda esquerda */
   color: var(--text-secondary, #9ca3af);
   font-size: 1.1rem;
   pointer-events: none;
-  /* Permite clicar "através" do ícone para focar no input */
   z-index: 2;
   transition: color 0.2s ease;
 }
 
-/* O Input ocupa 100% do wrapper e empurra o texto para não ficar em cima do ícone */
+.ios-native-input {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+}
+
 .full-width-input {
   width: 100%;
   padding-left: 3rem !important;
-  /* Espaço para o ícone respirar */
   padding-right: 1rem;
   padding-top: 0.9rem;
   padding-bottom: 0.9rem;
@@ -207,15 +239,43 @@ async function handleLogin() {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-/* Efeito ao focar no input (muda a cor do ícone também) */
+.full-width-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
 .full-width-input:focus+.input-icon,
 .input-wrapper:focus-within .input-icon {
   color: var(--accent-primary, #3b82f6);
 }
 
 /* ==========================================================================
-   BOTÃO DE LOGIN
+   BOTÃO DE LOGIN NATIVO
    ========================================================================== */
+.ios-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.ios-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ios-btn-primary {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.ios-btn-primary:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
 .login-btn {
   width: 100%;
   margin-top: 1rem;
@@ -224,7 +284,7 @@ async function handleLogin() {
   font-weight: 700;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
 }
 
 .login-btn:not(:disabled):hover {
@@ -232,11 +292,69 @@ async function handleLogin() {
   box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
 }
 
+/* ==========================================================================
+   TOAST NATIVO
+   ========================================================================== */
+.ios-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.25rem;
+  border-left: 4px solid var(--accent-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-color);
+  border-left-width: 4px;
+}
+
+.ios-toast-container.success {
+  border-left-color: #10b981;
+}
+
+.ios-toast-container.error {
+  border-left-color: #ef4444;
+}
+
+.ios-toast-summary {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.ios-toast-detail {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 /* Responsividade Básica */
 @media (max-width: 480px) {
   .login-card {
     padding: 2rem 1.5rem;
     border-radius: 20px;
+  }
+
+  .ios-toast-container {
+    left: 20px;
+    right: 20px;
+    top: 20px;
   }
 }
 </style>

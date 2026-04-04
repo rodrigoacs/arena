@@ -41,87 +41,86 @@
 
       <main class="public-main">
         <div class="content-grid">
+
           <div class="ranking-card card">
             <div class="card-header">
               <h2>🏆 Classificação Oficial</h2>
               <p>Atualizado em tempo real</p>
             </div>
 
-            <DataTable
-              :value="ranking"
-              stripedRows
-              responsiveLayout="scroll"
-              class="public-table"
-            >
-              <template #empty>
-                <div class="p-4 text-center text-gray-500">Nenhuma batalha foi travada nesta liga ainda.</div>
-              </template>
-
-              <Column
-                header="Pos"
-                style="width: 70px"
+            <div class="apple-list-card">
+              <div
+                v-if="ranking.length === 0"
+                class="p-4 text-center text-gray-500"
               >
-                <template #body="slotProps">
-                  <div
-                    class="rank-position"
-                    :class="`pos-${slotProps.index + 1}`"
-                  >
-                    {{ slotProps.index + 1 }}º
-                  </div>
-                </template>
-              </Column>
+                Nenhuma batalha foi travada nesta liga ainda.
+              </div>
 
-              <Column
-                field="player_name"
-                header="Comandante"
-                class="font-bold text-lg"
-              ></Column>
-
-              <Column
-                field="league_points"
-                header="Pontos"
-                style="width: 90px"
+              <div
+                class="table-responsive"
+                v-else
               >
-                <template #body="slotProps">
-                  <span class="points-badge">{{ slotProps.data.league_points }}</span>
-                </template>
-              </Column>
-
-              <Column header="1º">
-                <template #body="slotProps">
-                  <span class="text-yellow-500 font-bold text-lg">{{ slotProps.data.total_golds }}</span>
-                </template>
-              </Column>
-
-              <Column header="2º">
-                <template #body="slotProps">
-                  <span class="text-gray-400 font-bold text-lg">{{ slotProps.data.total_silvers }}</span>
-                </template>
-              </Column>
-
-              <Column header="3º">
-                <template #body="slotProps">
-                  <span class="text-amber-700 font-bold text-lg">{{ slotProps.data.total_bronzes }}</span>
-                </template>
-              </Column>
-
-              <Column
-                field="avg_position"
-                header="Média"
-                style="width: 100px"
-              >
-                <template #body="slotProps">
-                  <span class="avg-badge">{{ slotProps.data.avg_position || '-' }}</span>
-                </template>
-              </Column>
-
-              <Column
-                field="tournaments_played"
-                header="Jogos"
-                style="width: 80px"
-                class="text-gray-500"
-              ></Column>
-            </DataTable>
+                <table class="ios-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 70px; text-align: center;">Pos</th>
+                      <th>Comandante</th>
+                      <th style="width: 90px; text-align: center;">Pontos</th>
+                      <th
+                        style="text-align: center;"
+                        title="1º Lugares"
+                      >1º</th>
+                      <th
+                        style="text-align: center;"
+                        title="2º Lugares"
+                      >2º</th>
+                      <th
+                        style="text-align: center;"
+                        title="3º Lugares"
+                      >3º</th>
+                      <th style="width: 100px; text-align: center;">Média</th>
+                      <th style="width: 80px; text-align: center;">Jogos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(row, index) in ranking"
+                      :key="row.player_name"
+                    >
+                      <td style="text-align: center;">
+                        <div
+                          class="rank-position"
+                          :class="`pos-${index + 1}`"
+                        >{{ index + 1 }}º</div>
+                      </td>
+                      <td class="font-bold text-lg">{{ row.player_name }}</td>
+                      <td style="text-align: center;">
+                        <span class="points-badge">{{ row.league_points }}</span>
+                      </td>
+                      <td
+                        style="text-align: center;"
+                        class="text-yellow-500 font-bold text-lg"
+                      >{{ row.total_golds }}</td>
+                      <td
+                        style="text-align: center;"
+                        class="text-gray-400 font-bold text-lg"
+                      >{{ row.total_silvers }}</td>
+                      <td
+                        style="text-align: center;"
+                        class="text-amber-700 font-bold text-lg"
+                      >{{ row.total_bronzes }}</td>
+                      <td style="text-align: center;">
+                        <span class="avg-badge">{{ row.avg_position || '-' }}</span>
+                      </td>
+                      <td
+                        style="text-align: center;"
+                        class="text-gray-500"
+                      >{{ row.tournaments_played }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
           <div class="history-section mt-5">
@@ -199,11 +198,9 @@
                           v-if="res.deck_url"
                           :href="res.deck_url"
                           target="_blank"
-                          class="mt-1 inline-block p-button p-component p-button-text p-button-sm p-0 text-blue-500 hover:text-blue-700"
-                          style="text-decoration: none;"
+                          class="deck-link"
                         >
-                          <span class="pi pi-external-link mr-1 text-xs"></span>
-                          <span class="p-button-label">Ver Lista</span>
+                          <i class="pi pi-external-link"></i> Ver Lista
                         </a>
                       </div>
 
@@ -382,19 +379,49 @@ function formatDate(dateString) {
   font-size: 0.95rem;
 }
 
-/* Tabela Estilizada Pública */
-:deep(.public-table .p-datatable-thead > tr > th) {
-  background-color: var(--bg-primary);
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 0.5px;
-  padding: 1.25rem 1rem;
+/* =========================================================
+   TABELA NATIVA (Apple HIG)
+   ========================================================= */
+.apple-list-card {
+  background: var(--bg-secondary);
+  width: 100%;
 }
 
-:deep(.public-table .p-datatable-tbody > tr > td) {
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.ios-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.ios-table th {
+  background: rgba(0, 0, 0, 0.02);
+  padding: 1.25rem 1rem;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ios-table td {
   padding: 1rem;
   border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.ios-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ios-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.01);
 }
 
 .rank-position {
@@ -439,7 +466,9 @@ function formatDate(dateString) {
   border: 1px solid var(--border-color);
 }
 
-/* Estilos de Torneios Expansíveis */
+/* =========================================================
+   LISTA DE TORNEIOS EXPANSÍVEIS
+   ========================================================= */
 .tournaments-list {
   display: flex;
   flex-direction: column;
@@ -520,6 +549,27 @@ function formatDate(dateString) {
   padding: 0.2rem 0.5rem;
   border-radius: 6px;
   margin-top: 0.1rem;
+}
+
+/* Link Nativo do Deck */
+.deck-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  transition: color 0.2s;
+}
+
+.deck-link:hover {
+  color: #1d4ed8;
+}
+
+.deck-link i {
+  font-size: 0.75rem;
 }
 
 .public-footer {

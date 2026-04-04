@@ -1,58 +1,66 @@
 <template>
   <div class="active-round-container">
-    <div class="round-header card">
+    <div
+      v-if="toastMessage"
+      class="ios-toast-container"
+      :class="toastMessage.severity"
+    >
+      <div class="ios-toast-summary">{{ toastMessage.summary }}</div>
+      <div class="ios-toast-detail">{{ toastMessage.detail }}</div>
+    </div>
 
+    <div class="round-header card">
       <div
         class="flex justify-content-between align-items-center mb-3 pb-3"
         style="border-bottom: 1px solid var(--border-color)"
       >
-        <Button
-          icon="pi pi-cog"
-          label="Voltar p/ Configuração"
-          class="p-button-text p-button-secondary"
+        <button
+          class="ios-btn ios-btn-text"
+          title="Abortar torneio atual e mudar formato"
           @click="showResetConfirmDialog = true"
-          v-tooltip="'Abortar torneio atual e mudar formato'"
-        />
-        <Button
-          icon="pi pi-home"
-          label="Pausar e Ir p/ Liga"
-          class="p-button-text p-button-secondary"
+        >
+          <i class="pi pi-cog"></i> Voltar p/ Configuração
+        </button>
+        <button
+          class="ios-btn ios-btn-text"
+          title="Voltar ao painel sem cancelar o torneio"
           @click="pauseAndGoToLeague"
-          v-tooltip="'Voltar ao painel sem cancelar o torneio'"
-        />
+        >
+          <i class="pi pi-home"></i> Pausar e Ir p/ Liga
+        </button>
       </div>
 
       <div class="header-titles text-center mt-2 relative">
         <h2>Rodada {{ currentRound }} de {{ roundCount }}</h2>
         <p>A batalha está rolando. Cuidado com os combos infinitos!</p>
 
-        <Button
+        <button
           v-if="canEditPairings"
-          label="Ajustar Mesas Manualmente"
-          icon="pi pi-sliders-h"
-          class="p-button-outlined p-button-sm mt-3"
+          class="ios-btn ios-btn-outlined ios-btn-sm mt-3"
           @click="openEditPairings"
-        />
+        >
+          <i class="pi pi-sliders-h"></i> Ajustar Mesas Manualmente
+        </button>
       </div>
 
       <div
         class="header-actions"
         v-if="allResultsRegistered"
       >
-        <Button
+        <button
           v-if="currentRound < roundCount"
-          label="Gerar Próxima Rodada"
-          icon="pi pi-arrow-right"
+          class="ios-btn ios-btn-success ios-btn-lg w-full mt-3"
           @click="handleNextRound"
-          class="p-button-lg p-button-success w-full mt-3"
-        />
-        <Button
+        >
+          <i class="pi pi-arrow-right"></i> Gerar Próxima Rodada
+        </button>
+        <button
           v-else
-          label="Encerrar Torneio e Ver Pódio"
-          icon="pi pi-flag-fill"
+          class="ios-btn ios-btn-danger ios-btn-lg w-full mt-3"
           @click="showFinishConfirmDialog = true"
-          class="p-button-lg p-button-danger w-full mt-3"
-        />
+        >
+          <i class="pi pi-flag-fill"></i> Encerrar Torneio e Ver Pódio
+        </button>
       </div>
     </div>
 
@@ -89,20 +97,20 @@
         </ul>
 
         <div class="table-actions flex gap-2 w-full mt-3">
-          <Button
+          <button
             v-if="table.status === 'pending'"
-            label="Registrar Placar"
-            icon="pi pi-check-square"
-            class="w-full p-button-outlined"
+            class="ios-btn ios-btn-outlined w-full"
             @click="openResultDialog(index)"
-          />
-          <Button
+          >
+            <i class="pi pi-check-square"></i> Registrar Placar
+          </button>
+          <button
             v-else
-            label="Editar Placar"
-            icon="pi pi-pencil"
-            class="w-full p-button-text p-button-secondary"
+            class="ios-btn ios-btn-text w-full"
             @click="openResultDialog(index, true)"
-          />
+          >
+            <i class="pi pi-pencil"></i> Editar Placar
+          </button>
         </div>
       </div>
     </div>
@@ -111,289 +119,303 @@
       class="developer-controls"
       v-if="DEBUG"
     >
-      <Button
-        label="Auto Win (Dev)"
-        icon="pi pi-fast-forward"
-        class="p-button-warning mt-3"
+      <button
+        class="ios-btn ios-btn-warning mt-3"
         @click="generateRandomResults"
-      />
+      >
+        <i class="pi pi-fast-forward"></i> Auto Win (Dev)
+      </button>
     </div>
 
-    <Dialog
-      v-model:visible="showResultDialog"
-      :header="`Placar - Mesa ${selectedTable !== null ? currentTables[selectedTable]?.number : ''}`"
-      :style="{ width: '90vw', maxWidth: '500px' }"
-      modal
+    <div
+      v-if="showResultDialog"
+      class="ios-modal-overlay"
+      @click.self="showResultDialog = false"
     >
-      <div class="p-fluid">
-        <div
-          v-if="selectedTable !== null"
-          class="result-list"
-        >
+      <div class="ios-modal">
+        <div class="ios-modal-header">
+          Placar - Mesa {{ selectedTable !== null ? currentTables[selectedTable]?.number : '' }}
+        </div>
+        <div class="ios-modal-content">
           <div
-            v-for="(player, playerIndex) in currentTables[selectedTable].players"
-            :key="player.id"
-            class="result-row"
+            v-if="selectedTable !== null"
+            class="result-list"
           >
-            <div class="player-info">
-              <span class="font-bold">{{ player.name }}</span>
+            <div
+              v-for="(player, playerIndex) in currentTables[selectedTable].players"
+              :key="player.id"
+              class="result-row"
+            >
+              <div class="player-info">
+                <span class="font-bold">{{ player.name }}</span>
+              </div>
+              <div class="position-selector">
+                <button
+                  v-for="pos in currentTables[selectedTable].players.length"
+                  :key="pos"
+                  class="pos-btn"
+                  :class="{ 'selected': playerResults[playerIndex] === pos }"
+                  @click="selectPosition(playerIndex, pos)"
+                >
+                  {{ pos }}º
+                </button>
+              </div>
             </div>
-            <div class="position-selector">
-              <button
-                v-for="pos in currentTables[selectedTable].players.length"
-                :key="pos"
-                class="pos-btn"
-                :class="{ 'selected': playerResults[playerIndex] === pos }"
-                @click="selectPosition(playerIndex, pos)"
+          </div>
+          <div
+            v-if="resultsError"
+            class="text-error text-center mt-4 font-bold"
+          >
+            <i class="pi pi-exclamation-triangle mr-1"></i> {{ resultsError }}
+          </div>
+        </div>
+        <div class="ios-modal-footer">
+          <button
+            class="ios-btn ios-btn-text"
+            @click="showResultDialog = false"
+          >Cancelar</button>
+          <button
+            class="ios-btn ios-btn-primary"
+            @click="handleSaveResults"
+            :disabled="!isValidResults"
+          >
+            <i class="pi pi-check"></i> Salvar Mesa
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="showEditPairingsDialog"
+      class="ios-modal-overlay"
+      @click.self="showEditPairingsDialog = false"
+    >
+      <div class="ios-modal ios-modal-lg">
+        <div class="ios-modal-header">Ajustar Mesas da Rodada</div>
+        <div
+          class="ios-modal-content"
+          style="background: var(--bg-primary);"
+        >
+          <div class="apple-form-section">
+            <p class="text-gray-500 text-sm mb-3">Mova os jogadores de lugar livremente. Se selecionar alguém que já
+              está em outra mesa, o sistema fará a troca automaticamente.</p>
+
+            <div
+              class="import-alert mb-4"
+              v-if="manualPairingError"
+            >
+              <i class="pi pi-exclamation-triangle mr-2"></i> {{ manualPairingError }}
+            </div>
+
+            <div class="apple-tables-grid">
+              <div
+                v-for="(table, tIndex) in manualTables"
+                :key="tIndex"
+                class="apple-table-card"
               >
-                {{ pos }}º
+                <div class="apple-table-header">
+                  <span>MESA {{ tIndex + 1 }}</span>
+                  <div class="flex gap-2">
+                    <button
+                      class="ios-icon-btn text-blue-500"
+                      title="Adicionar Cadeira"
+                      @click="addManualSlot(tIndex)"
+                    >
+                      <i class="pi pi-user-plus"></i>
+                    </button>
+                    <button
+                      v-if="manualTables.length > 1"
+                      class="ios-icon-btn text-red-400"
+                      title="Remover Mesa"
+                      @click="removeManualTable(tIndex)"
+                    >
+                      <i class="pi pi-times"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="apple-table-content">
+                  <div
+                    v-for="(slotId, sIndex) in table.slots"
+                    :key="sIndex"
+                    class="apple-seat-row"
+                  >
+                    <i class="pi pi-user text-gray-400"></i>
+
+                    <select
+                      v-model="table.slots[sIndex]"
+                      class="ios-native-select flex-1"
+                      @change="handlePlayerMove(tIndex, sIndex, table.slots[sIndex])"
+                    >
+                      <option :value="null">Selecionar jogador...</option>
+                      <option
+                        v-for="player in players"
+                        :key="player.id"
+                        :value="player.id"
+                      >
+                        {{ player.name }} {{ getPlayerTable(player.id) ? `(Mesa ${getPlayerTable(player.id)})` : '' }}
+                      </option>
+                    </select>
+
+                    <button
+                      class="ios-delete-btn"
+                      @click="removeManualSlot(tIndex, sIndex)"
+                    >
+                      <i class="pi pi-minus-circle"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-content-center mt-4 mb-2">
+              <button
+                class="ios-btn ios-btn-outlined ios-btn-sm"
+                @click="addManualTable"
+              >
+                <i class="pi pi-plus-circle"></i> Adicionar Nova Mesa
               </button>
             </div>
           </div>
         </div>
-        <div
-          v-if="resultsError"
-          class="p-error text-center mt-4 font-bold"
-        >
-          <i class="pi pi-exclamation-triangle mr-1"></i> {{ resultsError }}
+        <div class="ios-modal-footer">
+          <button
+            class="ios-btn ios-btn-text"
+            @click="showEditPairingsDialog = false"
+          >Cancelar</button>
+          <button
+            class="ios-btn ios-btn-primary"
+            @click="saveManualPairings"
+            :disabled="!!manualPairingError"
+          >
+            <i class="pi pi-check"></i> Salvar Mesas
+          </button>
         </div>
       </div>
-      <template #footer>
-        <div class="flex justify-content-end gap-2 w-full mt-2">
-          <Button
-            label="Cancelar"
-            icon="pi pi-times"
-            @click="showResultDialog = false"
-            class="p-button-text"
-          />
-          <Button
-            label="Salvar Mesa"
-            icon="pi pi-check"
-            @click="handleSaveResults"
-            :disabled="!isValidResults"
-          />
-        </div>
-      </template>
-    </Dialog>
+    </div>
 
-    <Dialog
-      v-model:visible="showEditPairingsDialog"
-      header="Ajustar Mesas da Rodada"
-      :style="{ width: '95vw', maxWidth: '900px' }"
-      modal
+    <div
+      v-if="showResetConfirmDialog"
+      class="ios-modal-overlay"
+      @click.self="showResetConfirmDialog = false"
     >
-      <div class="apple-form-section mt-2">
-        <p class="text-gray-500 text-sm mb-3">Mova os jogadores de lugar livremente. Se selecionar alguém que já está em
-          outra mesa, o sistema fará a troca automaticamente.</p>
-
-        <div
-          class="import-alert mb-4"
-          v-if="manualPairingError"
-        >
-          <i class="pi pi-exclamation-triangle mr-2"></i> {{ manualPairingError }}
+      <div class="ios-modal">
+        <div class="ios-modal-header">Confirmar Retorno</div>
+        <div class="ios-modal-content">
+          <div class="flex align-items-center gap-4 py-3">
+            <i
+              class="pi pi-exclamation-triangle text-red-500"
+              style="font-size: 2.5rem"
+            ></i>
+            <p class="m-0 text-lg">Para voltar à configuração, todo o progresso atual será apagado e o torneio será
+              <strong>cancelado</strong>. Continuar?</p>
+          </div>
         </div>
+        <div class="ios-modal-footer">
+          <button
+            class="ios-btn ios-btn-text"
+            @click="showResetConfirmDialog = false"
+          >Não, ficar no torneio</button>
+          <button
+            class="ios-btn ios-btn-danger"
+            @click="confirmCancel"
+          ><i class="pi pi-trash"></i> Sim, cancelar torneio</button>
+        </div>
+      </div>
+    </div>
 
-        <div class="apple-tables-grid">
-          <div
-            v-for="(table, tIndex) in manualTables"
-            :key="tIndex"
-            class="apple-table-card"
+    <div
+      v-if="showFinishConfirmDialog"
+      class="ios-modal-overlay"
+      @click.self="showFinishConfirmDialog = false"
+    >
+      <div class="ios-modal">
+        <div class="ios-modal-header">Encerrar Torneio</div>
+        <div class="ios-modal-content">
+          <div class="flex align-items-center gap-4 py-3">
+            <i
+              class="pi pi-flag-fill text-blue-500"
+              style="font-size: 2.5rem"
+            ></i>
+            <p class="m-0 text-lg">Confirma o encerramento? Os resultados serão gravados definitivamente na base de
+              dados e no Ranking da Liga.</p>
+          </div>
+        </div>
+        <div class="ios-modal-footer">
+          <button
+            class="ios-btn ios-btn-text"
+            @click="showFinishConfirmDialog = false"
+          >Revisar Mesas</button>
+          <button
+            class="ios-btn ios-btn-primary"
+            @click="confirmFinish"
+            :disabled="isFinishing"
           >
-            <div class="apple-table-header">
-              <span>MESA {{ tIndex + 1 }}</span>
-              <div class="flex gap-2">
-                <Button
-                  icon="pi pi-user-plus"
-                  class="p-button-text p-button-sm p-0 w-2rem h-2rem text-blue-500"
-                  @click="addManualSlot(tIndex)"
-                  v-tooltip.top="'Adicionar Cadeira'"
-                />
-                <Button
-                  v-if="manualTables.length > 1"
-                  icon="pi pi-times"
-                  class="p-button-text p-button-sm p-0 w-2rem h-2rem text-red-400"
-                  @click="removeManualTable(tIndex)"
-                  v-tooltip.top="'Remover Mesa'"
-                />
-              </div>
-            </div>
+            <i
+              v-if="isFinishing"
+              class="pi pi-spin pi-spinner"
+            ></i>
+            <i
+              v-else
+              class="pi pi-check"
+            ></i> Gravar e Encerrar
+          </button>
+        </div>
+      </div>
+    </div>
 
-            <div class="apple-table-content">
-              <div
-                v-for="(slotId, sIndex) in table.slots"
-                :key="sIndex"
-                class="apple-seat-row"
-              >
-                <i class="pi pi-user text-gray-400"></i>
-                <Dropdown
-                  v-model="table.slots[sIndex]"
-                  :options="players"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Selecionar jogador..."
-                  class="ios-dropdown flex-1"
-                  @change="(e) => handlePlayerMove(tIndex, sIndex, e.value)"
-                >
-                  <template #option="slotProps">
-                    <div class="flex justify-content-between align-items-center w-full">
-                      <span>{{ slotProps.option.name }}</span>
-                      <span
-                        v-if="getPlayerTable(slotProps.option.id)"
-                        class="text-gray-400 text-xs ml-2 font-italic"
-                      >
-                        (Mesa {{ getPlayerTable(slotProps.option.id) }})
-                      </span>
-                    </div>
-                  </template>
-                </Dropdown>
-                <Button
-                  icon="pi pi-minus-circle"
-                  class="ios-delete-btn"
-                  @click="removeManualSlot(tIndex, sIndex)"
-                />
-              </div>
+    <div
+      v-if="showFinalResultsDialog"
+      class="ios-modal-overlay"
+    >
+      <div class="ios-modal">
+        <div class="ios-modal-header text-center">Pódio do Torneio</div>
+        <div class="ios-modal-content">
+          <div class="final-podium py-2">
+            <div
+              v-for="(player, index) in sortedPlayers"
+              :key="player.id"
+              class="podium-row"
+              :class="`rank-${index + 1}`"
+            >
+              <div class="rank-number">{{ index + 1 }}º</div>
+              <div class="podium-name font-bold">{{ player.name }}</div>
+              <div class="podium-points">{{ player.points }} pts</div>
             </div>
           </div>
         </div>
-
-        <div class="flex justify-content-center mt-4">
-          <Button
-            label="Adicionar Nova Mesa"
-            icon="pi pi-plus-circle"
-            class="p-button-outlined p-button-secondary p-button-sm"
-            @click="addManualTable"
-          />
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-content-end gap-2 w-full mt-3">
-          <Button
-            label="Cancelar"
-            icon="pi pi-times"
-            class="p-button-text p-button-secondary"
-            @click="showEditPairingsDialog = false"
-          />
-          <Button
-            label="Salvar Mesas"
-            icon="pi pi-check"
-            class="p-button-primary"
-            @click="saveManualPairings"
-            :disabled="!!manualPairingError"
-          />
-        </div>
-      </template>
-    </Dialog>
-
-    <Dialog
-      v-model:visible="showResetConfirmDialog"
-      header="Confirmar Retorno"
-      :style="{ width: '450px' }"
-      modal
-    >
-      <div class="flex align-items-center gap-4 py-3">
-        <i
-          class="pi pi-exclamation-triangle text-red-500"
-          style="font-size: 2.5rem"
-        />
-        <p class="m-0 text-lg">Para voltar à configuração, todo o progresso atual será apagado e o torneio será
-          <strong>cancelado</strong>. Continuar?
-        </p>
-      </div>
-      <template #footer>
-        <div class="flex justify-content-end gap-2 w-full mt-2">
-          <Button
-            label="Não, ficar no torneio"
-            icon="pi pi-times"
-            @click="showResetConfirmDialog = false"
-            class="p-button-text"
-          />
-          <Button
-            label="Sim, cancelar torneio"
-            icon="pi pi-trash"
-            class="p-button-danger"
-            @click="confirmCancel"
-          />
-        </div>
-      </template>
-    </Dialog>
-
-    <Dialog
-      v-model:visible="showFinishConfirmDialog"
-      header="Encerrar Torneio"
-      :style="{ width: '450px' }"
-      modal
-    >
-      <div class="flex align-items-center gap-4 py-3">
-        <i
-          class="pi pi-flag-fill text-blue-500"
-          style="font-size: 2.5rem"
-        />
-        <p class="m-0 text-lg">Confirma o encerramento? Os resultados serão gravados definitivamente na base de dados e
-          no Ranking da Liga.</p>
-      </div>
-      <template #footer>
-        <div class="flex justify-content-end gap-3 w-full mt-2">
-          <Button
-            label="Revisar Mesas"
-            icon="pi pi-times"
-            @click="showFinishConfirmDialog = false"
-            class="p-button-text p-button-secondary"
-          />
-          <Button
-            label="Gravar e Encerrar"
-            icon="pi pi-check"
-            class="p-button-primary"
-            @click="confirmFinish"
-            :loading="isFinishing"
-          />
-        </div>
-      </template>
-    </Dialog>
-
-    <Dialog
-      v-model:visible="showFinalResultsDialog"
-      header="Pódio do Torneio"
-      :style="{ width: '90vw', maxWidth: '600px' }"
-      modal
-      :closable="false"
-    >
-      <div class="final-podium py-2">
-        <div
-          v-for="(player, index) in sortedPlayers"
-          :key="player.id"
-          class="podium-row"
-          :class="`rank-${index + 1}`"
-        >
-          <div class="rank-number">{{ index + 1 }}º</div>
-          <div class="podium-name font-bold">{{ player.name }}</div>
-          <div class="podium-points">{{ player.points }} pts</div>
-        </div>
-      </div>
-      <template #footer>
-        <div class="flex justify-content-center w-full mt-3">
-          <Button
-            label="Voltar ao Painel da Liga"
-            icon="pi pi-trophy"
-            class="p-button-primary w-full p-button-lg"
+        <div class="ios-modal-footer flex-column">
+          <button
+            class="ios-btn ios-btn-primary ios-btn-lg w-full"
             @click="finishAndGoToLeague"
-          />
+          >
+            <i class="pi pi-trophy"></i> Voltar ao Painel da Liga
+          </button>
         </div>
-      </template>
-    </Dialog>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
 import { useTournament } from '../composables/useTournament'
 
 const DEBUG = false
-
 const router = useRouter()
-const toast = useToast()
+
+// --- SISTEMA DE TOAST NATIVO (Substitui PrimeVue Toast) ---
+const toastMessage = ref(null)
+let toastTimeout = null
+function showToast(options) {
+  if (toastTimeout) clearTimeout(toastTimeout)
+  toastMessage.value = options
+  toastTimeout = setTimeout(() => { toastMessage.value = null }, options.life || 3000)
+}
+// --------------------------------------------------------
+
 const {
   tableCount, roundCount, players, currentRound, sortedPlayers, currentTables, allResultsRegistered,
   saveResults, nextRound, endTournament, cancelTournament, clearTournamentState, updateCurrentRoundPairings
@@ -494,7 +516,7 @@ function saveManualPairings() {
 
   updateCurrentRoundPairings(newTables)
   showEditPairingsDialog.value = false
-  toast.add({ severity: 'success', summary: 'Mesas Atualizadas', detail: 'O emparceiramento da rodada foi modificado.', life: 3000 })
+  showToast({ severity: 'success', summary: 'Mesas Atualizadas', detail: 'O emparceiramento da rodada foi modificado.', life: 3000 })
 }
 
 
@@ -520,12 +542,12 @@ const isValidResults = computed(() => resultsError.value === null)
 function handleNextRound() {
   if (nextRound()) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    toast.add({ severity: 'success', summary: 'Nova Rodada', detail: `A Rodada ${currentRound.value} começou. Que vença o melhor!`, life: 3000 })
+    showToast({ severity: 'success', summary: 'Nova Rodada', detail: `A Rodada ${currentRound.value} começou. Que vença o melhor!`, life: 3000 })
   } else {
     if (currentRound.value >= roundCount.value) {
-      toast.add({ severity: 'info', summary: 'Limite Atingido', detail: 'O número máximo de rodadas já foi jogado.', life: 3000 })
+      showToast({ severity: 'info', summary: 'Limite Atingido', detail: 'O número máximo de rodadas já foi jogado.', life: 3000 })
     } else {
-      toast.add({ severity: 'warn', summary: 'Mesas Pendentes', detail: 'Registre o placar de TODAS as mesas antes de avançar.', life: 4000 })
+      showToast({ severity: 'warn', summary: 'Mesas Pendentes', detail: 'Registre o placar de TODAS as mesas antes de avançar.', life: 4000 })
     }
   }
 }
@@ -544,14 +566,14 @@ function selectPosition(playerIndex, pos) {
 
 function handleSaveResults() {
   if (!isValidResults.value) {
-    toast.add({ severity: 'error', summary: 'Erro de Placar', detail: resultsError.value, life: 3000 })
+    showToast({ severity: 'error', summary: 'Erro de Placar', detail: resultsError.value, life: 3000 })
     return
   }
   const numPlayersOnTable = currentTables.value[selectedTable.value].players.length
   const finalResults = playerResults.value.slice(0, numPlayersOnTable)
   saveResults(selectedTable.value, finalResults, isEditingResult.value)
   showResultDialog.value = false
-  toast.add({
+  showToast({
     severity: 'success',
     summary: 'Placar Salvo',
     detail: `Os resultados da Mesa ${selectedTable.value + 1} foram computados.`,
@@ -587,14 +609,14 @@ function generateRandomResults() {
     saveResults(tableIndex, positions)
   })
   if (pendingTablesCount > 0) {
-    toast.add({ severity: 'success', summary: 'Auto-Win', detail: `Resultados simulados para ${pendingTablesCount} mesas.`, life: 3000 })
+    showToast({ severity: 'success', summary: 'Auto-Win', detail: `Resultados simulados para ${pendingTablesCount} mesas.`, life: 3000 })
   }
 }
 
 async function confirmCancel() {
   await cancelTournament()
   showResetConfirmDialog.value = false
-  toast.add({ severity: 'info', summary: 'Cancelado', detail: 'O torneio foi abortado e removido do banco.', life: 3000 })
+  showToast({ severity: 'info', summary: 'Cancelado', detail: 'O torneio foi abortado e removido do banco.', life: 3000 })
 }
 
 function pauseAndGoToLeague() {
@@ -605,16 +627,15 @@ async function confirmFinish() {
   if (isFinishing.value) return
   isFinishing.value = true
 
-  toast.add({ severity: 'info', summary: 'A Gravar...', detail: 'A calcular o ranking final no servidor...', life: 2000 })
+  showToast({ severity: 'info', summary: 'A Gravar...', detail: 'A calcular o ranking final no servidor...', life: 2000 })
 
   const success = await endTournament()
 
   if (success) {
     showFinishConfirmDialog.value = false
     showFinalResultsDialog.value = true
-    toast.add({ severity: 'success', summary: 'Torneio Concluído!', detail: `O ranking foi gravado na base de dados com sucesso.`, life: 5000 })
   } else {
-    toast.add({ severity: 'error', summary: 'Erro de Servidor', detail: 'Não foi possível gravar o resultado no banco. Tenta novamente.', life: 5000 })
+    showToast({ severity: 'error', summary: 'Erro de Servidor', detail: 'Não foi possível gravar o resultado no banco.', life: 5000 })
   }
 
   isFinishing.value = false
@@ -627,6 +648,7 @@ function finishAndGoToLeague() {
 </script>
 
 <style scoped>
+/* ESTILOS BASE DO COMPONENTE */
 .active-round-container {
   max-width: 1000px;
   margin: 0 auto;
@@ -826,6 +848,272 @@ function finishAndGoToLeague() {
   border-color: #b45309;
 }
 
+.text-error {
+  color: #ef4444;
+}
+
+/* COMPONENTES HTML NATIVOS (Substitutos do PrimeVue) */
+.ios-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.ios-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ios-btn-primary {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.ios-btn-primary:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.ios-btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.ios-btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.ios-btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.ios-btn-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.ios-btn-warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.ios-btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.ios-btn-text {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.ios-btn-text:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.ios-btn-outlined {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.ios-btn-outlined:hover:not(:disabled) {
+  background: var(--bg-primary);
+}
+
+.ios-btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.ios-btn-lg {
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+}
+
+.ios-icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.ios-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* TOAST NATIVO */
+.ios-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.25rem;
+  border-left: 4px solid var(--accent-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-right: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ios-toast-container.success {
+  border-left-color: #10b981;
+}
+
+.ios-toast-container.error {
+  border-left-color: #ef4444;
+}
+
+.ios-toast-container.warn {
+  border-left-color: #f59e0b;
+}
+
+.ios-toast-container.info {
+  border-left-color: #3b82f6;
+}
+
+.ios-toast-summary {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.ios-toast-detail {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* MODAIS NATIVOS */
+.ios-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease;
+}
+
+.ios-modal {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: scaleUp 0.2s ease;
+}
+
+.ios-modal-lg {
+  max-width: 900px;
+}
+
+.ios-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.ios-modal-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ios-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: var(--bg-primary);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* SELECT NATIVO (Substituto do Dropdown) */
+.ios-native-select {
+  appearance: none;
+  background-color: transparent;
+  border: none;
+  font-size: 0.95rem;
+  font-family: inherit;
+  padding: 0.5rem;
+  width: 100%;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+}
+
+.ios-native-select option {
+  color: #000;
+  background: #fff;
+}
+
 /* EMPARCEIRAMENTO MANUAL CSS (APPLE HIG) */
 .apple-form-section {
   display: flex;
@@ -871,23 +1159,6 @@ function finishAndGoToLeague() {
   border-bottom: none;
 }
 
-:deep(.ios-dropdown .p-dropdown-label) {
-  padding: 0.25rem 0.5rem;
-  font-size: 1rem;
-  color: var(--text-primary);
-}
-
-:deep(.ios-dropdown.p-dropdown) {
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  width: 100%;
-}
-
-:deep(.ios-dropdown.p-dropdown:not(.p-disabled):hover) {
-  background: transparent;
-}
-
 .ios-delete-btn {
   color: #ef4444 !important;
   background: transparent !important;
@@ -899,6 +1170,8 @@ function finishAndGoToLeague() {
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .ios-delete-btn:hover {
@@ -923,7 +1196,15 @@ function finishAndGoToLeague() {
     gap: 1rem;
   }
 
-  .round-header>div:first-child .p-button {
+  .round-header>div:first-child .ios-btn {
+    width: 100%;
+  }
+
+  .ios-modal-footer {
+    flex-direction: column;
+  }
+
+  .ios-modal-footer .ios-btn {
     width: 100%;
   }
 }

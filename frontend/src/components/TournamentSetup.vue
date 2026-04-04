@@ -1,12 +1,22 @@
 <template>
   <div class="setup-container">
+    <div
+      v-if="toastMessage"
+      class="ios-toast-container"
+      :class="toastMessage.severity"
+    >
+      <div class="ios-toast-summary">{{ toastMessage.summary }}</div>
+      <div class="ios-toast-detail">{{ toastMessage.detail }}</div>
+    </div>
+
     <div class="setup-header relative">
-      <Button
-        icon="pi pi-arrow-left"
-        label="Voltar à Liga"
-        class="p-button-text p-button-secondary back-btn"
+      <button
+        class="ios-btn ios-btn-text back-btn"
         @click="goToLeague"
-      />
+        title="Voltar à Liga"
+      >
+        <i class="pi pi-arrow-left"></i> Voltar à Liga
+      </button>
       <h1>Gerenciador de Torneios</h1>
       <p>Configure o formato e convoque os jogadores que apareceram hoje.</p>
     </div>
@@ -18,39 +28,43 @@
       <div class="card-content">
         <div class="setup-controls">
           <div class="form-group format-group">
-            <label for="playersPerTable">Tamanho da Mesa</label>
-            <InputNumber
+            <label for="playersPerTable">Tamanho da Mesa (Jogadores)</label>
+            <input
               id="playersPerTable"
-              v-model="playersPerTable"
-              :min="2"
-              :max="10"
-              showButtons
-              suffix=" Jogadores"
+              type="number"
+              v-model.number="playersPerTable"
+              min="2"
+              max="10"
+              class="ios-input ios-input-bordered"
             />
           </div>
           <div class="form-group rounds-group">
             <label for="roundCount">Nº de Rodadas</label>
-            <InputNumber
+            <input
               id="roundCount"
-              v-model="roundCount"
-              :min="1"
-              showButtons
+              type="number"
+              v-model.number="roundCount"
+              min="1"
+              class="ios-input ios-input-bordered"
             />
           </div>
           <div class="form-group add-player-group">
             <label>Criar Novo Jogador</label>
-            <div class="p-inputgroup">
-              <InputText
+            <div class="ios-input-group">
+              <input
+                type="text"
                 v-model="newPlayerName"
                 placeholder="Nome do novato..."
                 @keydown.enter="handleAddPlayer"
+                class="ios-input ios-input-bordered"
               />
-              <Button
-                label="Adicionar"
-                icon="pi pi-plus"
+              <button
+                class="ios-btn ios-btn-primary"
                 @click="handleAddPlayer"
                 :disabled="!newPlayerName || isProcessing"
-              />
+              >
+                <i class="pi pi-plus"></i> Adicionar
+              </button>
             </div>
           </div>
         </div>
@@ -100,33 +114,37 @@
             <div
               v-for="(player, index) in players"
               :key="player.id"
-              class="deck-input-group flex align-items-center justify-content-between p-3 border-1 border-round surface-border"
+              class="deck-input-group"
             >
-              <div class="flex flex-column">
-                <span class="font-bold text-sm">{{ player.name }}</span>
+              <div class="deck-info">
+                <span class="deck-player-name">{{ player.name }}</span>
                 <span
                   v-if="player.deck_name"
-                  class="text-xs text-gray-500 mt-1"
-                > ({{ player.deck_name }})</span>
+                  class="deck-commander-name"
+                >
+                  ({{ player.deck_name }})
+                </span>
               </div>
-              <Button
-                :label="player.deck_name ? 'Editar' : 'Adicionar'"
-                :icon="player.deck_name ? 'pi pi-pencil' : 'pi pi-plus'"
-                :class="player.deck_name ? 'p-button-success p-button-outlined p-button-sm' : 'p-button-secondary p-button-outlined p-button-sm'"
+              <button
+                class="ios-btn ios-btn-sm"
+                :class="player.deck_name ? 'ios-btn-success-outlined' : 'ios-btn-secondary-outlined'"
                 @click="openDeckInput(index)"
-              />
+              >
+                <i :class="player.deck_name ? 'pi pi-pencil' : 'pi pi-plus'"></i>
+                {{ player.deck_name ? 'Editar' : 'Adicionar' }}
+              </button>
             </div>
           </div>
         </div>
 
         <div class="start-tournament">
-          <Button
-            :label="`Iniciar Etapa (${players.length} Jogadores)`"
-            icon="pi pi-play"
+          <button
+            class="ios-btn ios-btn-primary ios-btn-lg start-button"
             @click="handleStartTournament"
             :disabled="players.length < playersPerTable || isProcessing"
-            class="p-button-lg start-button"
-          />
+          >
+            <i class="pi pi-play"></i> Iniciar Etapa ({{ players.length }} Jogadores)
+          </button>
           <small
             class="min-players-warning"
             v-if="players.length < playersPerTable"
@@ -137,64 +155,82 @@
       </div>
     </div>
 
-    <Dialog
-      v-model:visible="showDeckInputModal"
-      :header="`Deck de ${currentEditingPlayerName}`"
-      modal
-      :style="{ width: '90vw', maxWidth: '400px' }"
+    <div
+      v-if="showDeckInputModal"
+      class="ios-modal-overlay"
+      @click.self="showDeckInputModal = false"
     >
-      <div class="p-fluid mt-2 flex flex-column gap-3">
-        <div class="field mb-0">
-          <label class="text-sm font-bold text-gray-700 block mb-2">Nome do Comandante</label>
-          <InputText
-            v-model="tempDeckInfo.name"
-            placeholder="Ex: Atraxa, Praetors' Voice"
-          />
+      <div class="ios-modal">
+        <div class="ios-modal-header">
+          Deck de {{ currentEditingPlayerName }}
         </div>
-        <div class="field mb-0">
-          <label class="text-sm font-bold text-gray-700 block mb-2">Link da Lista (Opcional)</label>
-          <InputText
-            v-model="tempDeckInfo.url"
-            placeholder="Link do Moxfield, Archidekt, etc."
-          />
-        </div>
-      </div>
-      <template #footer>
-        <div class="flex justify-content-between w-full mt-3">
-          <Button
-            label="Limpar"
-            icon="pi pi-trash"
-            class="p-button-text p-button-danger"
-            @click="clearTempDeck"
-          />
-          <div class="flex gap-2">
-            <Button
-              label="Cancelar"
-              icon="pi pi-times"
-              class="p-button-text p-button-secondary"
-              @click="showDeckInputModal = false"
-            />
-            <Button
-              label="Salvar"
-              icon="pi pi-check"
-              class="p-button-primary"
-              @click="saveDeckInput"
-            />
+        <div class="ios-modal-content">
+          <div class="apple-form-section">
+            <div class="apple-form-group">
+              <div class="apple-form-row">
+                <label>NOME DO COMANDANTE</label>
+                <input
+                  type="text"
+                  v-model="tempDeckInfo.name"
+                  placeholder="Ex: Atraxa, Praetors' Voice"
+                  class="ios-input"
+                />
+              </div>
+              <div class="apple-form-row">
+                <label>LINK DA LISTA (OPCIONAL)</label>
+                <input
+                  type="text"
+                  v-model="tempDeckInfo.url"
+                  placeholder="Moxfield, Archidekt, etc."
+                  class="ios-input"
+                />
+              </div>
+            </div>
           </div>
         </div>
-      </template>
-    </Dialog>
+        <div class="ios-modal-footer flex justify-content-between">
+          <button
+            class="ios-btn ios-btn-text text-red-500"
+            @click="clearTempDeck"
+          >
+            <i class="pi pi-trash"></i> Limpar
+          </button>
+          <div class="flex gap-2">
+            <button
+              class="ios-btn ios-btn-text"
+              @click="showDeckInputModal = false"
+            >Cancelar</button>
+            <button
+              class="ios-btn ios-btn-primary"
+              @click="saveDeckInput"
+            >
+              <i class="pi pi-check"></i> Salvar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
 import { useTournament } from '../composables/useTournament'
 
 const router = useRouter()
-const toast = useToast()
+
+// --- SISTEMA DE TOAST NATIVO ---
+const toastMessage = ref(null)
+let toastTimeout = null
+function showToast(options) {
+  if (toastTimeout) clearTimeout(toastTimeout)
+  toastMessage.value = options
+  toastTimeout = setTimeout(() => { toastMessage.value = null }, options.life || 3000)
+}
+// --------------------------------
+
 const {
   playersPerTable, roundCount, players, allAdminPlayers,
   addPlayer, togglePlayer, startTournament, fetchExistingPlayers
@@ -246,7 +282,7 @@ function saveDeckInput() {
     players.value[currentEditingPlayerIndex.value].deck_url = tempDeckInfo.value.url.trim()
   }
   showDeckInputModal.value = false
-  toast.add({ severity: 'success', summary: 'Comandante Salvo', detail: 'Deck anexado ao jogador.', life: 2000 })
+  showToast({ severity: 'success', summary: 'Comandante Salvo', detail: 'Deck anexado ao jogador.', life: 2000 })
 }
 
 async function handleAddPlayer() {
@@ -255,10 +291,10 @@ async function handleAddPlayer() {
 
   const success = await addPlayer(newPlayerName.value)
   if (success) {
-    toast.add({ severity: 'success', summary: 'Jogador Cadastrado', detail: `${newPlayerName.value} adicionado ao elenco e à etapa.`, life: 3000 })
+    showToast({ severity: 'success', summary: 'Jogador Cadastrado', detail: `${newPlayerName.value} adicionado ao elenco e à etapa.`, life: 3000 })
     newPlayerName.value = ''
   } else {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao registar o jogador no servidor (nome duplicado?).', life: 3000 })
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Erro ao registar o jogador no servidor (nome duplicado?).', life: 3000 })
   }
 
   isProcessing.value = false
@@ -270,9 +306,10 @@ async function handleStartTournament() {
 
   const success = await startTournament()
   if (success) {
-    toast.add({ severity: 'success', summary: 'Torneio iniciado!', detail: 'Primeira rodada gerada.', life: 3000 })
+    showToast({ severity: 'success', summary: 'Torneio iniciado!', detail: 'Primeira rodada gerada.', life: 3000 })
+    // Redireciona para a página de ActiveRound (assumindo que a rota é a mesma onde o setup é renderizado condicionalmente, ou mude a rota se for separada)
   } else {
-    toast.add({ severity: 'error', summary: 'Erro', detail: `O formato exige no mínimo ${playersPerTable.value} participantes ou ocorreu um erro.`, life: 4000 })
+    showToast({ severity: 'error', summary: 'Erro', detail: `O formato exige no mínimo ${playersPerTable.value} participantes ou ocorreu um erro.`, life: 4000 })
   }
 
   isProcessing.value = false
@@ -370,25 +407,111 @@ async function handleStartTournament() {
   flex: 2 1 300px;
 }
 
-:deep(.p-inputnumber),
-:deep(.p-inputtext),
-:deep(.p-inputnumber-input) {
+/* COMPONENTES HTML NATIVOS */
+.ios-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.ios-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ios-btn-primary {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.ios-btn-primary:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.ios-btn-text {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.ios-btn-text:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.ios-btn-secondary-outlined {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.ios-btn-secondary-outlined:hover:not(:disabled) {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.ios-btn-success-outlined {
+  background: transparent;
+  border: 1px solid #10b981;
+  color: #10b981;
+}
+
+.ios-btn-success-outlined:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.ios-btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.ios-btn-lg {
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+}
+
+.ios-input {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
   width: 100%;
 }
 
-.p-inputgroup {
+.ios-input-bordered {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.ios-input-bordered:focus {
+  border-color: var(--accent-primary);
+}
+
+.ios-input-group {
   display: flex;
   width: 100%;
-  border-radius: var(--radius-sm, 8px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.p-inputgroup :deep(.p-inputtext) {
+.ios-input-group .ios-input-bordered {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
+  flex: 1;
 }
 
-.p-inputgroup :deep(.p-button) {
+.ios-input-group .ios-btn {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
@@ -464,6 +587,7 @@ async function handleStartTournament() {
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
+  font-family: inherit;
 }
 
 .pool-chip:hover {
@@ -520,6 +644,32 @@ async function handleStartTournament() {
   gap: 1rem;
 }
 
+.deck-input-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.deck-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.deck-player-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.deck-commander-name {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
 .start-tournament {
   display: flex;
   flex-direction: column;
@@ -532,10 +682,8 @@ async function handleStartTournament() {
 .start-button {
   padding: 1.25rem 3rem;
   font-size: 1.2rem;
-  font-weight: 700;
   border-radius: 50px;
   box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
-  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .start-button:not(:disabled):hover {
@@ -550,6 +698,163 @@ async function handleStartTournament() {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+/* MODAL APPLE HIG */
+.ios-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease;
+}
+
+.ios-modal {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: scaleUp 0.2s ease;
+}
+
+.ios-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.ios-modal-content {
+  padding: 1.5rem;
+  background: var(--bg-primary);
+}
+
+.ios-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.apple-form-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.apple-form-group {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.apple-form-row {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.apple-form-row:last-child {
+  border-bottom: none;
+}
+
+.apple-form-row label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.apple-form-row .ios-input {
+  padding: 0.25rem 0 !important;
+}
+
+/* TOAST NATIVO */
+.ios-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.25rem;
+  border-left: 4px solid var(--accent-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-color);
+  border-left-width: 4px;
+}
+
+.ios-toast-container.success {
+  border-left-color: #10b981;
+}
+
+.ios-toast-container.error {
+  border-left-color: #ef4444;
+}
+
+.ios-toast-summary {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.ios-toast-detail {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @media (max-width: 600px) {

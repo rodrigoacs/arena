@@ -1,119 +1,143 @@
 <template>
   <div class="league-details-page">
+    <div
+      v-if="toastMessage"
+      class="ios-toast-container"
+      :class="toastMessage.severity"
+    >
+      <div class="ios-toast-summary">{{ toastMessage.summary }}</div>
+      <div class="ios-toast-detail">{{ toastMessage.detail }}</div>
+    </div>
+
     <header class="dashboard-header">
       <div class="header-content">
         <div class="title-area">
-          <Button
-            icon="pi pi-arrow-left"
-            class="p-button-text p-button-secondary p-button-rounded mr-2"
+          <button
+            class="ios-icon-btn mr-2"
             @click="goBack"
-          />
-          <i class="pi pi-trophy"></i>
+            title="Voltar"
+          >
+            <i class="pi pi-arrow-left"></i>
+          </button>
+          <i class="pi pi-trophy text-yellow-500 text-xl mr-2"></i>
           <h1>Painel da Liga</h1>
         </div>
         <div class="header-actions">
-          <Button
-            label="Nova Etapa (Ao Vivo)"
-            icon="pi pi-play"
-            class="p-button-primary action-btn"
+          <button
+            class="ios-btn ios-btn-primary"
             @click="goToTournament"
-          />
+          >
+            <i class="pi pi-play"></i> Nova Etapa (Ao Vivo)
+          </button>
         </div>
       </div>
     </header>
 
     <main class="dashboard-main">
       <div class="content-grid">
+
         <section class="ranking-section">
           <div class="section-header">
             <h2>🏆 Ranking Geral</h2>
-            <div class="flex gap-2">
-              <Button
-                label="Exportar CSV"
-                icon="pi pi-download"
-                class="p-button-outlined p-button-success p-button-sm"
+            <div class="flex gap-2 flex-wrap">
+              <button
+                class="ios-btn ios-btn-success-outlined ios-btn-sm"
                 @click="exportCSV"
-              />
-              <Button
-                label="Copiar Link"
-                icon="pi pi-link"
-                class="p-button-outlined p-button-info p-button-sm"
+              >
+                <i class="pi pi-download"></i> Exportar CSV
+              </button>
+              <button
+                class="ios-btn ios-btn-info-outlined ios-btn-sm"
                 @click="copyPublicLink"
-              />
-              <Button
-                label="Importar Histórico"
-                icon="pi pi-upload"
-                class="p-button-outlined p-button-secondary p-button-sm"
+              >
+                <i class="pi pi-link"></i> Copiar Link
+              </button>
+              <button
+                class="ios-btn ios-btn-secondary-outlined ios-btn-sm"
                 @click="openImportModal"
-              />
+              >
+                <i class="pi pi-upload"></i> Importar Histórico
+              </button>
             </div>
           </div>
 
-          <div class="card p-0">
-            <DataTable
-              :value="ranking"
-              :loading="isLoading"
-              stripedRows
-              responsiveLayout="scroll"
+          <div class="apple-list-card">
+            <div
+              v-if="isLoading"
+              class="p-4 text-center text-gray-500"
             >
-              <template #empty>
-                <div class="p-4 text-center text-gray-500">Nenhum resultado registado ainda.</div>
-              </template>
+              <i class="pi pi-spin pi-spinner mr-2"></i> A carregar ranking...
+            </div>
 
-              <Column
-                header="Pos"
-                style="width: 70px"
-              >
-                <template #body="slotProps">
-                  <div
-                    class="rank-position"
-                    :class="`pos-${slotProps.index + 1}`"
+            <div
+              v-else-if="ranking.length === 0"
+              class="p-4 text-center text-gray-500"
+            >
+              Nenhum resultado registado ainda.
+            </div>
+
+            <div
+              class="table-responsive"
+              v-else
+            >
+              <table class="ios-table">
+                <thead>
+                  <tr>
+                    <th style="width: 60px; text-align: center;">Pos</th>
+                    <th>Jogador</th>
+                    <th style="width: 70px; text-align: center;">Pts</th>
+                    <th
+                      style="text-align: center;"
+                      title="1º Lugares (Ouros)"
+                    >1º</th>
+                    <th
+                      style="text-align: center;"
+                      title="2º Lugares (Pratas)"
+                    >2º</th>
+                    <th
+                      style="text-align: center;"
+                      title="3º Lugares (Bronzes)"
+                    >3º</th>
+                    <th style="text-align: center;">Média Pos.</th>
+                    <th style="text-align: center;">Etapas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(row, index) in ranking"
+                    :key="row.player_name"
                   >
-                    {{ slotProps.index + 1 }}º
-                  </div>
-                </template>
-              </Column>
-              <Column
-                field="player_name"
-                header="Jogador"
-                class="font-bold"
-              ></Column>
-              <Column
-                field="league_points"
-                header="Pts"
-                style="width: 70px"
-                class="text-blue-500 font-bold"
-              ></Column>
-              <Column header="1º">
-                <template #body="slotProps">
-                  <span class="text-yellow-500 font-bold">{{ slotProps.data.total_golds }}</span>
-                </template>
-              </Column>
-              <Column header="2º">
-                <template #body="slotProps">
-                  <span class="text-gray-400 font-bold">{{ slotProps.data.total_silvers }}</span>
-                </template>
-              </Column>
-              <Column header="3º">
-                <template #body="slotProps">
-                  <span class="text-amber-700 font-bold">{{ slotProps.data.total_bronzes }}</span>
-                </template>
-              </Column>
-              <Column
-                field="avg_position"
-                header="Média Pos."
-                style="width: 100px"
-              >
-                <template #body="slotProps">
-                  <span class="avg-badge">{{ slotProps.data.avg_position || '-' }}</span>
-                </template>
-              </Column>
-              <Column
-                field="tournaments_played"
-                header="Etapas"
-                style="width: 80px"
-              ></Column>
-            </DataTable>
+                    <td style="text-align: center;">
+                      <div
+                        class="rank-position"
+                        :class="`pos-${index + 1}`"
+                      >{{ index + 1 }}º</div>
+                    </td>
+                    <td class="font-bold">{{ row.player_name }}</td>
+                    <td
+                      style="text-align: center;"
+                      class="text-blue-500 font-bold"
+                    >{{ row.league_points }}</td>
+                    <td
+                      style="text-align: center;"
+                      class="text-yellow-500 font-bold"
+                    >{{ row.total_golds }}</td>
+                    <td
+                      style="text-align: center;"
+                      class="text-gray-400 font-bold"
+                    >{{ row.total_silvers }}</td>
+                    <td
+                      style="text-align: center;"
+                      class="text-amber-700 font-bold"
+                    >{{ row.total_bronzes }}</td>
+                    <td style="text-align: center;">
+                      <span class="avg-badge">{{ row.avg_position || '-' }}</span>
+                    </td>
+                    <td style="text-align: center;">{{ row.tournaments_played }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 
@@ -125,7 +149,7 @@
           <div class="tournaments-list">
             <div
               v-if="tournaments.length === 0 && !isLoading"
-              class="p-4 text-center text-gray-500 card"
+              class="p-4 text-center text-gray-500 apple-list-card"
             >
               Nenhum torneio realizado.
             </div>
@@ -189,17 +213,16 @@
                         v-if="res.deck_name"
                         class="inner-deck-name text-sm text-gray-500 mt-1"
                       >
-                        <i class="pi pi-id-card mr-1"></i>{{ res.deck_name }}
+                        <i class="pi pi-id-card mr-1"></i> {{ res.deck_name }}
                       </span>
                       <a
                         v-if="res.deck_url"
                         :href="res.deck_url"
                         target="_blank"
-                        class="mt-1 inline-block p-button p-component p-button-text p-button-sm p-0 text-blue-500 hover:text-blue-700"
+                        class="mt-1 text-blue-500 hover:text-blue-700 text-sm font-semibold inline-flex align-items-center"
                         style="text-decoration: none;"
                       >
-                        <span class="pi pi-external-link mr-1 text-xs"></span>
-                        <span class="p-button-label">Ver Lista</span>
+                        <i class="pi pi-external-link mr-1 text-xs"></i> Ver Lista
                       </a>
                     </div>
                     <div class="inner-pts">{{ res.total_points }} pts</div>
@@ -212,241 +235,260 @@
       </div>
     </main>
 
-    <Dialog
-      v-model:visible="showImportModal"
-      header="Reconstruir Torneio Passado"
-      :style="{ width: '95vw', maxWidth: '1200px' }"
-      modal
-      :closable="!isSaving"
-      class="workspace-dialog"
+    <div
+      v-if="showImportModal"
+      class="ios-modal-overlay"
+      style="align-items: flex-start; padding-top: 2rem;"
     >
-      <div class="import-workspace">
-        <div class="workspace-sidebar">
-          <div class="apple-form-section">
-            <div class="apple-section-label">1. DADOS DO EVENTO</div>
-            <div class="apple-form-group">
-              <div class="apple-form-row">
-                <label>NOME DO TORNEIO</label>
-                <InputText
-                  v-model="importData.name"
-                  placeholder="Ex: Etapa Inverno 2026"
-                  class="ios-input"
-                />
+      <div class="ios-modal ios-modal-xl">
+        <div class="ios-modal-header text-center">Reconstruir Torneio Passado</div>
+        <div
+          class="ios-modal-content p-0"
+          style="overflow: hidden;"
+        >
+
+          <div class="import-workspace">
+            <div class="workspace-sidebar">
+              <div class="apple-form-section">
+                <div class="apple-section-label">1. DADOS DO EVENTO</div>
+                <div class="apple-form-group">
+                  <div class="apple-form-row">
+                    <label>NOME DO TORNEIO</label>
+                    <input
+                      type="text"
+                      v-model="importData.name"
+                      placeholder="Ex: Etapa Inverno 2026"
+                      class="ios-input"
+                    />
+                  </div>
+                  <div class="apple-form-row">
+                    <label>DATA DE REALIZAÇÃO</label>
+                    <input
+                      type="date"
+                      v-model="importData.date"
+                      class="ios-input"
+                    />
+                  </div>
+                </div>
               </div>
-              <div class="apple-form-row">
-                <label>DATA DE REALIZAÇÃO</label>
-                <InputText
-                  type="date"
-                  v-model="importData.date"
-                  class="ios-input"
-                />
+
+              <div class="apple-form-section mt-5">
+                <div class="apple-section-label">2. NOVO JOGADOR</div>
+                <div class="apple-section-desc">Cadastre para ele aparecer nas mesas.</div>
+                <div class="apple-form-group flex align-items-center pr-2">
+                  <input
+                    type="text"
+                    v-model="quickPlayerName"
+                    placeholder="Nome completo..."
+                    @keydown.enter="handleQuickAddPlayer"
+                    class="ios-input flex-1 ml-3 my-2"
+                  />
+                  <button
+                    class="ios-icon-btn text-blue-500 flex-shrink-0"
+                    @click="handleQuickAddPlayer"
+                    :disabled="!quickPlayerName || isCreatingPlayer"
+                    title="Adicionar Jogador"
+                  >
+                    <i :class="isCreatingPlayer ? 'pi pi-spin pi-spinner' : 'pi pi-plus-circle'"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="ios-tip mt-5">
+                <i class="pi pi-lightbulb"></i>
+                <p>Reconstrua as mesas exatas. Jogadores já sentados numa rodada não aparecerão nas outras mesas da
+                  mesma rodada.</p>
               </div>
             </div>
-          </div>
 
-          <div class="apple-form-section mt-5">
-            <div class="apple-section-label">2. NOVO JOGADOR</div>
-            <div class="apple-section-desc">Cadastre rapidamente para que ele apareça nas mesas ao lado.</div>
-            <div class="apple-form-group flex align-items-center pr-2">
-              <InputText
-                v-model="quickPlayerName"
-                placeholder="Nome completo..."
-                @keydown.enter="handleQuickAddPlayer"
-                class="ios-input flex-1 ml-3 my-2"
-              />
-              <Button
-                icon="pi pi-plus-circle"
-                class="p-button-rounded p-button-text p-button-primary m-0 w-2rem h-2rem flex-shrink-0"
-                @click="handleQuickAddPlayer"
-                :loading="isCreatingPlayer"
-                :disabled="!quickPlayerName"
-                v-tooltip.top="'Adicionar Jogador'"
-              />
+            <div class="workspace-main">
+              <div class="main-header">
+                <div class="header-text">
+                  <h3 class="panel-title m-0">3. Rodadas e Mesas</h3>
+                  <p class="text-sm text-gray-500 m-0 mt-1">Deixe em branco os lugares ou mesas que não foram
+                    utilizados.</p>
+                </div>
+                <button
+                  class="ios-btn ios-btn-primary ios-btn-sm"
+                  @click="addRound"
+                >
+                  <i class="pi pi-plus"></i> Nova Rodada
+                </button>
+              </div>
+
+              <div class="placements-list-container">
+                <div
+                  class="import-alert mb-4"
+                  v-if="importError"
+                >
+                  <i class="pi pi-exclamation-triangle mr-2"></i> {{ importError }}
+                </div>
+
+                <div
+                  v-for="(round, rIndex) in importData.rounds"
+                  :key="round.id"
+                  class="apple-round-container"
+                >
+                  <div class="apple-section-label flex justify-content-between align-items-center mb-2">
+                    <span>RODADA {{ rIndex + 1 }}</span>
+                    <button
+                      v-if="importData.rounds.length > 1"
+                      class="ios-icon-btn text-red-500 p-1 w-2rem h-2rem"
+                      @click="removeRound(rIndex)"
+                      title="Excluir Rodada"
+                    >
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
+
+                  <div class="apple-tables-grid">
+                    <div
+                      v-for="(table, tIndex) in round.tables"
+                      :key="table.id"
+                      class="apple-table-card"
+                    >
+                      <div class="apple-table-header">
+                        <span>MESA {{ tIndex + 1 }}</span>
+                        <div class="flex gap-2">
+                          <button
+                            class="ios-icon-btn text-blue-500 w-2rem h-2rem p-0"
+                            @click="addSeat(rIndex, tIndex)"
+                            title="Adicionar Jogador"
+                          >
+                            <i class="pi pi-user-plus"></i>
+                          </button>
+                          <button
+                            v-if="round.tables.length > 1"
+                            class="ios-icon-btn text-red-400 w-2rem h-2rem p-0"
+                            @click="removeTable(rIndex, tIndex)"
+                            title="Remover Mesa"
+                          >
+                            <i class="pi pi-times"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="apple-table-content">
+                        <div
+                          v-for="(seat, sIndex) in table.seats"
+                          :key="sIndex"
+                          class="apple-seat-row"
+                        >
+                          <div
+                            class="seat-medal"
+                            :class="`pos-${seat.pos}`"
+                          >{{ seat.pos }}º</div>
+                          <select
+                            v-model="seat.player_id"
+                            class="ios-native-select flex-1"
+                          >
+                            <option :value="null">Selecionar jogador...</option>
+                            <option
+                              v-for="player in getAvailablePlayers(rIndex, seat.player_id)"
+                              :key="player.id"
+                              :value="player.id"
+                            >
+                              {{ player.name }}
+                            </option>
+                          </select>
+                          <button
+                            v-if="table.seats.length > 2"
+                            class="ios-delete-btn"
+                            @click="removeSeat(rIndex, tIndex, sIndex)"
+                            tabindex="-1"
+                          >
+                            <i class="pi pi-minus-circle"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex justify-content-start mt-3 mb-5">
+                    <button
+                      class="ios-btn ios-btn-text ios-btn-sm text-blue-500 font-bold"
+                      @click="addTable(rIndex)"
+                    >
+                      <i class="pi pi-plus-circle"></i> Nova Mesa
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  v-if="uniquePlayersInImport.length > 0"
+                  class="apple-form-section border-top-1 surface-border pt-4 mt-2"
+                >
+                  <div class="apple-section-label">4. COMANDANTES (OPCIONAL)</div>
+                  <div class="apple-section-desc">Insira o deck dos jogadores para o metagame.</div>
+
+                  <div class="apple-form-group">
+                    <div
+                      v-for="player in uniquePlayersInImport"
+                      :key="player.id"
+                      class="apple-form-row ios-deck-row"
+                    >
+                      <div class="ios-deck-player">
+                        <i class="pi pi-user text-gray-400"></i>
+                        <span class="font-bold text-sm">{{ player.name }}</span>
+                      </div>
+                      <div class="ios-deck-inputs">
+                        <input
+                          type="text"
+                          v-model="importDecks[player.id].name"
+                          placeholder="Nome do Comandante"
+                          class="ios-input"
+                        />
+                        <div class="ios-divider"></div>
+                        <input
+                          type="text"
+                          v-model="importDecks[player.id].url"
+                          placeholder="Link da Lista"
+                          class="ios-input"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
             </div>
-          </div>
-
-          <div class="ios-tip mt-5">
-            <i class="pi pi-lightbulb"></i>
-            <p>Reconstrua as mesas exatas. Jogadores já sentados numa rodada não aparecerão nas outras mesas da mesma
-              rodada.</p>
           </div>
         </div>
-
-        <div class="workspace-main">
-          <div class="main-header">
-            <div class="header-text">
-              <h3 class="panel-title m-0">3. Rodadas e Mesas</h3>
-              <p class="text-sm text-gray-500 m-0 mt-1">Deixe em branco os lugares ou mesas que não foram utilizados.
-              </p>
-            </div>
-            <Button
-              label="Nova Rodada"
-              icon="pi pi-plus"
-              class="p-button-primary p-button-sm ios-shadow"
-              @click="addRound"
-            />
-          </div>
-
-          <div class="placements-list-container">
-            <div
-              class="import-alert mb-4"
-              v-if="importError"
-            >
-              <i class="pi pi-exclamation-triangle mr-2"></i> {{ importError }}
-            </div>
-
-            <div
-              v-for="(round, rIndex) in importData.rounds"
-              :key="round.id"
-              class="apple-round-container"
-            >
-              <div class="apple-section-label flex justify-content-between align-items-center">
-                <span>RODADA {{ rIndex + 1 }}</span>
-                <Button
-                  v-if="importData.rounds.length > 1"
-                  icon="pi pi-trash"
-                  class="p-button-rounded p-button-danger p-button-text p-button-sm p-0 w-2rem h-2rem"
-                  @click="removeRound(rIndex)"
-                  v-tooltip.left="'Excluir Rodada'"
-                />
-              </div>
-
-              <div class="apple-tables-grid">
-                <div
-                  v-for="(table, tIndex) in round.tables"
-                  :key="table.id"
-                  class="apple-table-card"
-                >
-                  <div class="apple-table-header">
-                    <span>MESA {{ tIndex + 1 }}</span>
-                    <div class="flex gap-2">
-                      <Button
-                        label="Jogador"
-                        icon="pi pi-user-plus"
-                        class="p-button-text p-button-sm p-0 text-blue-500 font-normal"
-                        @click="addSeat(rIndex, tIndex)"
-                      />
-                      <Button
-                        v-if="round.tables.length > 1"
-                        icon="pi pi-times"
-                        class="p-button-rounded p-button-danger p-button-text p-0 w-1rem h-1rem ml-2"
-                        @click="removeTable(rIndex, tIndex)"
-                        v-tooltip.top="'Remover Mesa'"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="apple-table-content">
-                    <div
-                      v-for="(seat, sIndex) in table.seats"
-                      :key="sIndex"
-                      class="apple-seat-row"
-                    >
-                      <div
-                        class="seat-medal"
-                        :class="`pos-${seat.pos}`"
-                      >{{ seat.pos }}º</div>
-                      <Dropdown
-                        v-model="seat.player_id"
-                        :options="getAvailablePlayers(rIndex, seat.player_id)"
-                        optionLabel="name"
-                        optionValue="id"
-                        filter
-                        showClear
-                        placeholder="Selecionar jogador..."
-                        class="ios-dropdown flex-1"
-                      />
-                      <Button
-                        v-if="table.seats.length > 2"
-                        icon="pi pi-minus-circle"
-                        class="ios-delete-btn"
-                        @click="removeSeat(rIndex, tIndex, sIndex)"
-                        tabindex="-1"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="flex justify-content-start mt-3 mb-5">
-                <Button
-                  label="Nova Mesa"
-                  icon="pi pi-plus-circle"
-                  class="p-button-text p-button-sm text-blue-500 font-bold"
-                  @click="addTable(rIndex)"
-                />
-              </div>
-            </div>
-
-            <div
-              v-if="uniquePlayersInImport.length > 0"
-              class="apple-form-section border-top-1 surface-border pt-4 mt-2"
-            >
-              <div class="apple-section-label">4. COMANDANTES (OPCIONAL)</div>
-              <div class="apple-section-desc">Insira o deck dos jogadores para o metagame.</div>
-
-              <div class="apple-form-group">
-                <div
-                  v-for="player in uniquePlayersInImport"
-                  :key="player.id"
-                  class="apple-form-row ios-deck-row"
-                >
-                  <div class="ios-deck-player">
-                    <i class="pi pi-user text-gray-400"></i>
-                    <span class="font-bold text-sm">{{ player.name }}</span>
-                  </div>
-                  <div class="ios-deck-inputs">
-                    <InputText
-                      v-model="importDecks[player.id].name"
-                      placeholder="Nome do Comandante"
-                      class="ios-input"
-                    />
-                    <div class="ios-divider"></div>
-                    <InputText
-                      v-model="importDecks[player.id].url"
-                      placeholder="Link da Lista"
-                      class="ios-input"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
+        <div class="ios-modal-footer justify-content-between">
+          <button
+            class="ios-btn ios-btn-text text-gray-500"
+            @click="showImportModal = false"
+            :disabled="isSaving"
+          >Cancelar</button>
+          <button
+            class="ios-btn ios-btn-primary"
+            @click="handleImport"
+            :disabled="!isImportValid || isSaving"
+          >
+            <i :class="isSaving ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></i> Calcular Ranking e Salvar
+          </button>
         </div>
       </div>
-
-      <template #footer>
-        <div class="workspace-footer">
-          <Button
-            label="Cancelar"
-            icon="pi pi-times"
-            @click="showImportModal = false"
-            class="p-button-text p-button-secondary"
-            :disabled="isSaving"
-          />
-          <Button
-            label="Calcular Ranking e Salvar"
-            icon="pi pi-check"
-            @click="handleImport"
-            :loading="isSaving"
-            :disabled="!isImportValid"
-            class="p-button-primary p-button-lg ml-3 ios-shadow"
-          />
-        </div>
-      </template>
-    </Dialog>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
 import { api } from '../services/api'
 
 const router = useRouter()
-const toast = useToast()
+
+// --- SISTEMA DE TOAST NATIVO ---
+const toastMessage = ref(null)
+let toastTimeout = null
+function showToast(options) {
+  if (toastTimeout) clearTimeout(toastTimeout)
+  toastMessage.value = options
+  toastTimeout = setTimeout(() => { toastMessage.value = null }, options.life || 3000)
+}
+// --------------------------------
 
 const ranking = ref([])
 const tournaments = ref([])
@@ -485,7 +527,7 @@ async function loadDashboardData() {
     tournaments.value = tourneysData
     allPlayers.value = playersData
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao carregar dados da liga', life: 3000 })
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Falha ao carregar dados da liga', life: 3000 })
   } finally {
     isLoading.value = false
   }
@@ -696,11 +738,11 @@ async function handleImport() {
     const tourney = await api.createTournament(importData.value.name, importData.value.date, 'imported')
     await api.saveResults(tourney.id, resultsPayload)
 
-    toast.add({ severity: 'success', summary: 'Histórico Reconstruído', detail: 'O ranking foi processado com sucesso!', life: 4000 })
+    showToast({ severity: 'success', summary: 'Histórico Reconstruído', detail: 'O ranking foi processado com sucesso!', life: 4000 })
     showImportModal.value = false
     await loadDashboardData()
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Ocorreu um erro ao salvar o torneio.', life: 4000 })
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Ocorreu um erro ao salvar o torneio.', life: 4000 })
   } finally {
     isSaving.value = false
   }
@@ -712,10 +754,10 @@ async function handleQuickAddPlayer() {
   try {
     const newPlayer = await api.createPlayer(quickPlayerName.value.trim())
     allPlayers.value.push(newPlayer)
-    toast.add({ severity: 'success', summary: 'Cadastrado', detail: `${newPlayer.name} pronto para jogar.`, life: 3000 })
+    showToast({ severity: 'success', summary: 'Cadastrado', detail: `${newPlayer.name} pronto para jogar.`, life: 3000 })
     quickPlayerName.value = ''
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Nome duplicado ou falha na rede.', life: 4000 })
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Nome duplicado ou falha na rede.', life: 4000 })
   } finally {
     isCreatingPlayer.value = false
   }
@@ -733,7 +775,7 @@ function formatStatus(status) {
 function copyPublicLink() {
   const url = `${window.location.origin}/l/${api.getLeagueId()}`
   navigator.clipboard.writeText(url).then(() => {
-    toast.add({ severity: 'info', summary: 'Link Copiado!', detail: 'Envie para a galera.', life: 3000 })
+    showToast({ severity: 'info', summary: 'Link Copiado!', detail: 'Envie para a galera.', life: 3000 })
   })
 }
 
@@ -779,7 +821,6 @@ function exportCSV() {
 .title-area {
   display: flex;
   align-items: center;
-  gap: 1rem;
   color: var(--text-primary);
 }
 
@@ -820,7 +861,8 @@ function exportCSV() {
   color: var(--text-primary);
 }
 
-.card {
+/* TABELA NATIVA (Apple HIG) */
+.apple-list-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 16px;
@@ -828,8 +870,45 @@ function exportCSV() {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.ios-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.ios-table th {
+  background: rgba(0, 0, 0, 0.02);
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ios-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.ios-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ios-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.01);
+}
+
 .rank-position {
-  font-family: 'JetBrains Mono', monospace !important;
+  font-family: 'JetBrains Mono', monospace;
   font-weight: 800;
   color: var(--text-secondary);
   font-size: 1.1rem;
@@ -847,6 +926,7 @@ function exportCSV() {
   border-radius: 6px;
   font-weight: 800;
   border: 1px solid rgba(59, 130, 246, 0.2);
+  display: inline-block;
 }
 
 .tournaments-list {
@@ -972,16 +1052,237 @@ function exportCSV() {
   margin-top: 0.1rem;
 }
 
-:deep(.workspace-dialog .p-dialog-content) {
-  padding: 0;
-  overflow: hidden;
+/* COMPONENTES NATIVOS APPLE HIG */
+.ios-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.ios-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ios-btn-primary {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.ios-btn-primary:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.ios-btn-text {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.ios-btn-text:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.ios-btn-info-outlined {
+  background: transparent;
+  border: 1px solid #3b82f6;
+  color: #3b82f6;
+}
+
+.ios-btn-info-outlined:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.ios-btn-success-outlined {
+  background: transparent;
+  border: 1px solid #10b981;
+  color: #10b981;
+}
+
+.ios-btn-success-outlined:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.ios-btn-secondary-outlined {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.ios-btn-secondary-outlined:hover:not(:disabled) {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.ios-btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.ios-icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.ios-icon-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* TOAST NATIVO */
+.ios-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.25rem;
+  border-left: 4px solid var(--accent-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-color);
+  border-left-width: 4px;
+}
+
+.ios-toast-container.success {
+  border-left-color: #10b981;
+}
+
+.ios-toast-container.error {
+  border-left-color: #ef4444;
+}
+
+.ios-toast-container.info {
+  border-left-color: #3b82f6;
+}
+
+.ios-toast-summary {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.ios-toast-detail {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* MODAIS NATIVOS E FORMS HIG */
+.ios-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease;
+}
+
+.ios-modal {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: scaleUp 0.2s ease;
+}
+
+.ios-modal-xl {
+  max-width: 1200px;
+  height: 90vh;
+}
+
+.ios-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.ios-modal-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ios-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 0.75rem;
+  background: var(--bg-primary);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .import-workspace {
   display: flex;
   flex-direction: row;
-  height: 85vh;
-  min-height: 600px;
+  height: 100%;
   background: var(--bg-primary);
 }
 
@@ -992,6 +1293,40 @@ function exportCSV() {
   border-right: 1px solid var(--border-color);
   padding: 1.5rem;
   overflow-y: auto;
+}
+
+.workspace-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+.main-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-primary);
+}
+
+.placements-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.placements-list-container::-webkit-scrollbar,
+.workspace-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.placements-list-container::-webkit-scrollbar-thumb,
+.workspace-sidebar::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 10px;
 }
 
 .apple-form-section {
@@ -1044,17 +1379,32 @@ function exportCSV() {
 }
 
 .ios-input {
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-  font-size: 1rem !important;
-  color: var(--text-primary) !important;
-  box-shadow: none !important;
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0;
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+  width: 100%;
 }
 
-.ios-input:focus {
-  outline: none !important;
-  box-shadow: none !important;
+.ios-native-select {
+  appearance: none;
+  background-color: transparent;
+  border: none;
+  font-size: 0.95rem;
+  font-family: inherit;
+  padding: 0.5rem;
+  width: 100%;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+}
+
+.ios-native-select option {
+  color: #000;
+  background: #fff;
 }
 
 .ios-tip {
@@ -1073,10 +1423,6 @@ function exportCSV() {
   margin-top: 0.1rem;
 }
 
-.ios-tip p {
-  margin: 0;
-}
-
 .panel-title {
   font-size: 1.2rem;
   font-weight: 700;
@@ -1084,40 +1430,6 @@ function exportCSV() {
   margin-top: 0;
   margin-bottom: 0;
   letter-spacing: -0.5px;
-}
-
-.workspace-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-primary);
-  overflow: hidden;
-}
-
-.main-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--bg-primary);
-}
-
-.placements-list-container {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-}
-
-.placements-list-container::-webkit-scrollbar,
-.workspace-sidebar::-webkit-scrollbar {
-  width: 8px;
-}
-
-.placements-list-container::-webkit-scrollbar-thumb,
-.workspace-sidebar::-webkit-scrollbar-thumb {
-  background-color: var(--border-color);
-  border-radius: 10px;
 }
 
 .apple-round-container {
@@ -1139,7 +1451,7 @@ function exportCSV() {
 }
 
 .apple-table-header {
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.02);
   padding: 0.75rem 1rem;
   font-size: 0.8rem;
   font-weight: 700;
@@ -1186,23 +1498,6 @@ function exportCSV() {
   color: var(--text-tertiary);
 }
 
-:deep(.ios-dropdown .p-dropdown-label) {
-  padding: 0.25rem 0.5rem;
-  font-size: 1rem;
-  color: var(--text-primary);
-}
-
-:deep(.ios-dropdown.p-dropdown) {
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  width: 100%;
-}
-
-:deep(.ios-dropdown.p-dropdown:not(.p-disabled):hover) {
-  background: transparent;
-}
-
 .ios-delete-btn {
   color: #ef4444 !important;
   background: transparent !important;
@@ -1214,6 +1509,8 @@ function exportCSV() {
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .ios-delete-btn:hover {
@@ -1266,14 +1563,6 @@ function exportCSV() {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.workspace-footer {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  width: 100%;
-  padding-top: 1rem;
-}
-
 @media (max-width: 1024px) {
   .import-workspace {
     flex-direction: column;
@@ -1306,14 +1595,20 @@ function exportCSV() {
     padding: 1.5rem 1rem;
   }
 
-  .workspace-footer {
+  .ios-modal-footer {
     flex-direction: column-reverse;
     gap: 1rem;
   }
 
-  .workspace-footer .p-button {
+  .ios-modal-footer .ios-btn {
     width: 100%;
     margin: 0 !important;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
 }
 </style>
