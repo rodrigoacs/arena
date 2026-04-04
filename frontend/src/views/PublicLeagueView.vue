@@ -5,7 +5,7 @@
       class="flex flex-col items-center justify-center h-screen text-system-gray"
     >
       <i class="pi pi-spin pi-spinner text-4xl text-system-blue mb-4"></i>
-      <p>Carregando o campo de batalha...</p>
+      <p>Carregando a liga...</p>
     </div>
 
     <div
@@ -36,7 +36,7 @@
             <div
               v-if="ranking.length === 0"
               class="p-6 text-center text-system-gray"
-            >Nenhuma batalha travada ainda.</div>
+            >Nenhum torneio registrado ainda.</div>
             <table
               v-else
               class="w-full text-left border-collapse min-w-[600px]"
@@ -46,7 +46,7 @@
                   class="bg-black/5 dark:bg-white/5 border-b border-system-border dark:border-system-borderDark text-xs text-system-gray uppercase tracking-wide"
                 >
                   <th class="p-3 text-center">Pos</th>
-                  <th class="p-3">Comandante</th>
+                  <th class="p-3">Jogador</th>
                   <th class="p-3 text-center">Pontos</th>
                   <th class="p-3 text-center">1º</th>
                   <th class="p-3 text-center">2º</th>
@@ -92,7 +92,7 @@
         </div>
 
         <div class="ios-grouped-section">
-          <div class="ios-grouped-label">ÚLTIMOS CONFRONTOS E META GAME</div>
+          <div class="ios-grouped-label">ÚLTIMOS TORNEIOS</div>
           <div
             v-if="tournaments.length === 0"
             class="ios-grouped-list p-6 text-center text-system-gray"
@@ -136,28 +136,42 @@
                   <div
                     v-for="res in tourney.results"
                     :key="res.player_name"
-                    class="flex items-center bg-system-card dark:bg-system-cardDark p-3 rounded-lg border border-system-border dark:border-system-borderDark"
+                    class="relative overflow-hidden flex items-center bg-system-card dark:bg-system-cardDark p-3 rounded-lg border border-system-border dark:border-system-borderDark"
                   >
                     <div
-                      class="font-bold w-8 text-center text-lg"
+                      v-if="res.deck_name"
+                      class="absolute inset-0 z-0 opacity-40 dark:opacity-50 pointer-events-none transition-opacity"
+                      :style="{ backgroundImage: `url('https://api.scryfall.com/cards/named?exact=${encodeURIComponent(res.deck_name)}&format=image&version=art_crop')`, backgroundSize: 'cover', backgroundPosition: 'center 20%' }"
+                    ></div>
+                    <div
+                      v-if="res.deck_name"
+                      class="absolute inset-0 z-0 bg-gradient-to-r from-system-card via-system-card/95 to-system-card/5 dark:from-system-cardDark dark:via-system-cardDark/95 dark:to-transparent pointer-events-none"
+                    ></div>
+
+                    <div
+                      class="relative z-10 font-bold w-8 text-center text-lg"
                       :class="res.final_position === 1 ? 'text-system-orange' : res.final_position === 2 ? 'text-system-gray' : res.final_position === 3 ? 'text-[#b45309]' : 'text-system-gray'"
                     >{{ res.final_position }}º</div>
-                    <div class="avatar-circle shadow-sm">{{ res.player_name.charAt(0) }}</div>
-                    <div class="flex-1 px-3 flex flex-col min-w-0">
-                      <span class="font-bold text-sm truncate">{{ res.player_name }}</span>
+                    <div class="relative z-10 avatar-circle shadow-sm">{{ res.player_name.charAt(0) }}</div>
+                    <div class="relative z-10 flex-1 px-3 flex flex-col min-w-0">
+                      <span
+                        class="font-bold text-sm truncate"
+                        :title="res.player_name"
+                      >{{ res.player_name }}</span>
                       <a
                         v-if="res.deck_url"
                         :href="res.deck_url"
                         target="_blank"
-                        class="text-xs text-system-blue hover:text-blue-700 no-underline mt-1 font-medium truncate"
+                        class="text-xs text-system-blue hover:text-blue-700 no-underline mt-1 font-bold truncate drop-shadow-md"
                       ><i class="pi pi-external-link"></i> {{ res.deck_name || 'Ver Lista' }}</a>
                       <span
                         v-else-if="res.deck_name"
-                        class="text-xs text-system-gray mt-1 truncate"
+                        class="text-xs text-system-text mt-1 truncate font-medium drop-shadow-md"
                       ><i class="pi pi-id-card"></i> {{ res.deck_name }}</span>
                     </div>
-                    <div class="font-bold text-system-blue text-sm bg-system-blue/10 px-2 py-1 rounded">{{
-                      res.total_points }} pts</div>
+                    <div
+                      class="relative z-10 font-bold text-system-blue text-sm bg-system-blue/10 dark:bg-system-cardDark/50 px-2 py-1 rounded backdrop-blur-sm"
+                    >{{ res.total_points }} pts</div>
                   </div>
                 </div>
               </div>

@@ -27,7 +27,7 @@
           class="ios-btn ios-btn-primary py-2 px-3 text-sm"
           @click="goToTournament"
         >
-          <i class="pi pi-play"></i> Novo Torneio
+          <i class="pi pi-play"></i> Nova Etapa
         </button>
       </div>
     </header>
@@ -97,7 +97,7 @@
                   title="3º Lugares"
                 >3º</th>
                 <th class="p-3 text-center font-bold">Média</th>
-                <th class="p-3 text-center font-bold">Torneios</th>
+                <th class="p-3 text-center font-bold">Etapas</th>
               </tr>
             </thead>
             <tbody>
@@ -182,7 +182,7 @@
               <div
                 v-if="tourney.results.length === 0"
                 class="text-center text-system-gray text-sm"
-              >Nenhum jogador pontuou nesta torneio.</div>
+              >Nenhum jogador pontuou nesta etapa.</div>
               <div
                 v-else
                 class="flex flex-col gap-2"
@@ -190,14 +190,24 @@
                 <div
                   v-for="res in tourney.results"
                   :key="res.player_name"
-                  class="flex items-center bg-system-card dark:bg-system-cardDark p-3 rounded-lg border border-system-border dark:border-system-borderDark"
+                  class="relative overflow-hidden flex items-center bg-system-card dark:bg-system-cardDark p-3 rounded-lg border border-system-border dark:border-system-borderDark"
                 >
                   <div
-                    class="font-bold w-8 text-center text-lg"
+                    v-if="res.deck_name"
+                    class="absolute inset-0 z-0 opacity-40 dark:opacity-50 pointer-events-none transition-opacity"
+                    :style="{ backgroundImage: `url('https://api.scryfall.com/cards/named?exact=${encodeURIComponent(res.deck_name)}&format=image&version=art_crop')`, backgroundSize: 'cover', backgroundPosition: 'center 20%' }"
+                  ></div>
+                  <div
+                    v-if="res.deck_name"
+                    class="absolute inset-0 z-0 bg-gradient-to-r from-system-card via-system-card/95 to-system-card/5 dark:from-system-cardDark dark:via-system-cardDark/95 dark:to-transparent pointer-events-none"
+                  ></div>
+
+                  <div
+                    class="relative z-10 font-bold w-8 text-center text-lg"
                     :class="res.final_position === 1 ? 'text-system-orange' : res.final_position === 2 ? 'text-system-gray' : res.final_position === 3 ? 'text-[#b45309]' : 'text-system-gray'"
                   >{{ res.final_position }}º</div>
-                  <div class="avatar-circle shadow-sm">{{ res.player_name.charAt(0) }}</div>
-                  <div class="flex-1 px-3 flex flex-col min-w-0">
+                  <div class="relative z-10 avatar-circle shadow-sm">{{ res.player_name.charAt(0) }}</div>
+                  <div class="relative z-10 flex-1 px-3 flex flex-col min-w-0">
                     <span
                       class="font-bold text-sm truncate"
                       :title="res.player_name"
@@ -206,15 +216,16 @@
                       v-if="res.deck_url"
                       :href="res.deck_url"
                       target="_blank"
-                      class="text-xs text-system-blue no-underline mt-1 font-medium truncate"
+                      class="text-xs text-system-blue no-underline mt-1 font-bold truncate drop-shadow-md"
                     ><i class="pi pi-external-link"></i> {{ res.deck_name || 'Ver Lista' }}</a>
                     <span
                       v-else-if="res.deck_name"
-                      class="text-xs text-system-gray mt-1 truncate"
+                      class="text-xs text-system-text mt-1 truncate font-medium drop-shadow-md"
                     ><i class="pi pi-id-card"></i> {{ res.deck_name }}</span>
                   </div>
-                  <div class="font-bold text-system-blue text-sm bg-system-blue/10 px-2 py-1 rounded">{{
-                    res.total_points }} pts</div>
+                  <div
+                    class="relative z-10 font-bold text-system-blue text-sm bg-system-blue/10 dark:bg-system-cardDark/50 px-2 py-1 rounded backdrop-blur-sm"
+                  >{{ res.total_points }} pts</div>
                 </div>
               </div>
             </div>
@@ -248,7 +259,7 @@
         </div>
 
         <div
-          class="ios-modal-content p-0 flex flex-col md:flex-row flex-1 overflow-hidden bg-system-bg dark:bg-system-bgDark"
+          class="ios-modal-content p-0 flex flex-col md:flex-row flex-1 overflow-visible bg-system-bg dark:bg-system-bgDark"
         >
           <div
             class="w-full md:w-[300px] bg-system-card dark:bg-system-cardDark border-b md:border-b-0 md:border-r border-system-border dark:border-system-borderDark overflow-y-auto p-4 shrink-0"
@@ -261,7 +272,7 @@
                   <input
                     type="text"
                     v-model="importData.name"
-                    placeholder="Ex: Torneio Inverno"
+                    placeholder="Ex: Etapa Inverno"
                     class="ios-input text-sm"
                   />
                 </div>
@@ -398,19 +409,35 @@
                 <div
                   v-for="player in uniquePlayersInImport"
                   :key="player.id"
-                  class="ios-grouped-list"
+                  class="ios-grouped-list !overflow-visible"
                 >
                   <div class="ios-list-item bg-black/5 dark:bg-white/5 py-2 font-bold text-sm">
                     <i class="pi pi-user mr-2 text-system-gray"></i>{{ player.name }}
                     <span class="text-[10px] text-system-gray ml-1.5 font-mono opacity-60">#{{ shortId(player.id)
                       }}</span>
                   </div>
-                  <div class="ios-list-item py-1"><input
+                  <div class="ios-list-item py-1 relative !overflow-visible">
+                    <input
                       type="text"
                       v-model="importDecks[player.id].name"
-                      placeholder="Nome do Comandante"
-                      class="ios-input text-sm"
-                    /></div>
+                      @input="handleScryfallSearch(player.id)"
+                      placeholder="Comandante (em inglês)"
+                      class="ios-input text-sm text-system-blue font-bold"
+                    />
+                    <ul
+                      v-if="activeScryfallPlayerId === player.id && scryfallSuggestions.length > 0"
+                      class="absolute z-50 top-full left-0 w-full mt-1 bg-system-card dark:bg-system-cardDark border border-system-border dark:border-system-borderDark rounded-lg shadow-xl max-h-[200px] overflow-y-auto"
+                    >
+                      <li
+                        v-for="sug in scryfallSuggestions"
+                        :key="sug"
+                        @click="selectSuggestion(player.id, sug)"
+                        class="px-4 py-3 text-sm border-b border-system-border dark:border-system-borderDark last:border-none cursor-pointer hover:bg-system-blue hover:text-white transition-colors"
+                      >
+                        {{ sug }}
+                      </li>
+                    </ul>
+                  </div>
                   <div class="ios-list-item py-1"><input
                       type="text"
                       v-model="importDecks[player.id].url"
@@ -460,6 +487,46 @@ const expandedTournaments = ref({})
 
 const importData = ref({ name: '', date: new Date().toISOString().split('T')[0], rounds: [] })
 const importDecks = ref({})
+
+/* Autocomplete Scryfall (Busca Avançada) para a Máquina do Tempo */
+const activeScryfallPlayerId = ref(null)
+const scryfallSuggestions = ref([])
+let searchApiTimeout = null
+
+async function handleScryfallSearch(playerId) {
+  activeScryfallPlayerId.value = playerId
+  const q = importDecks.value[playerId].name.trim()
+  if (q.length < 3) {
+    scryfallSuggestions.value = []
+    return
+  }
+  if (searchApiTimeout) clearTimeout(searchApiTimeout)
+  searchApiTimeout = setTimeout(async () => {
+    try {
+      const res = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(q + ' is:commander')}`)
+      if (!res.ok) {
+        scryfallSuggestions.value = []
+        return
+      }
+      const data = await res.json()
+      if (data.data) {
+        const uniqueNames = [...new Set(data.data.map(card => card.name))]
+        scryfallSuggestions.value = uniqueNames.slice(0, 10)
+      } else {
+        scryfallSuggestions.value = []
+      }
+    } catch (e) {
+      scryfallSuggestions.value = []
+    }
+  }, 300)
+}
+
+// ESTA FUNÇÃO HAVIA SIDO APAGADA NO SEU CÓDIGO
+function selectSuggestion(playerId, name) {
+  importDecks.value[playerId].name = name
+  scryfallSuggestions.value = []
+  activeScryfallPlayerId.value = null
+}
 
 onMounted(loadDashboardData)
 

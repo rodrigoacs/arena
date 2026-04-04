@@ -19,13 +19,15 @@
         </button>
       </div>
       <h1 class="text-3xl font-bold tracking-tight">Configuração</h1>
-      <p class="text-system-gray text-sm mt-1">Defina o formato e convoque os jogadores.</p>
     </header>
 
     <div class="px-4">
       <div class="ios-grouped-section">
         <div class="ios-grouped-label">FORMATO DO TORNEIO</div>
-        <div class="ios-grouped-list">
+        <div
+          class="ios-grouped-list"
+          style="display: flex; align-items: center; justify-content: space-around;"
+        >
           <div class="ios-list-item">
             <span class="font-medium">Tamanho da Mesa</span>
             <input
@@ -146,7 +148,7 @@
           @click="handleStartTournament"
           :disabled="players.length < playersPerTable || isProcessing"
         >
-          Iniciar Torneio ({{ players.length }} Jogadores)
+          Iniciar Etapa ({{ players.length }} Jogadores)
         </button>
         <p
           class="text-system-orange text-xs mt-2 font-medium"
@@ -162,18 +164,33 @@
       class="ios-modal-overlay"
       @click.self="showDeckInputModal = false"
     >
-      <div class="ios-modal">
+      <div class="ios-modal !overflow-visible">
         <div class="ios-modal-header">Deck de {{ currentEditingPlayerName }}</div>
-        <div class="ios-modal-content p-0 bg-system-bg dark:bg-system-bgDark">
+        <div class="ios-modal-content p-0 bg-system-bg dark:bg-system-bgDark !overflow-visible">
           <div class="ios-grouped-section mt-6 px-4">
-            <div class="ios-grouped-list">
-              <div class="ios-list-item">
+            <div class="ios-grouped-list !overflow-visible">
+              <div class="ios-list-item relative !overflow-visible">
                 <input
                   type="text"
                   v-model="tempDeckInfo.name"
-                  placeholder="Nome do Comandante"
-                  class="ios-input"
+                  @input="handleScryfallSearch"
+                  placeholder="Comandante (em inglês)"
+                  class="ios-input font-bold text-system-blue"
                 />
+
+                <ul
+                  v-if="scryfallSuggestions.length > 0"
+                  class="absolute z-50 top-full left-0 w-full mt-2 bg-system-card dark:bg-system-cardDark border border-system-border dark:border-system-borderDark rounded-lg shadow-xl max-h-[200px] overflow-y-auto"
+                >
+                  <li
+                    v-for="sug in scryfallSuggestions"
+                    :key="sug"
+                    @click="selectSuggestion(sug)"
+                    class="px-4 py-3 text-sm border-b border-system-border dark:border-system-borderDark last:border-none cursor-pointer hover:bg-system-blue hover:text-white transition-colors"
+                  >
+                    {{ sug }}
+                  </li>
+                </ul>
               </div>
               <div class="ios-list-item">
                 <input
@@ -237,6 +254,43 @@ const showDeckInputModal = ref(false)
 const currentEditingPlayerIndex = ref(null)
 const tempDeckInfo = ref({ name: '', url: '' })
 
+/* Integração Scryfall (Busca Avançada) */
+const scryfallSuggestions = ref([])
+let searchApiTimeout = null
+
+async function handleScryfallSearch() {
+  const q = tempDeckInfo.value.name.trim()
+  if (q.length < 3) {
+    scryfallSuggestions.value = []
+    return
+  }
+  if (searchApiTimeout) clearTimeout(searchApiTimeout)
+  searchApiTimeout = setTimeout(async () => {
+    try {
+      const res = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(q + ' is:commander')}`)
+      if (!res.ok) {
+        scryfallSuggestions.value = []
+        return
+      }
+      const data = await res.json()
+      if (data.data) {
+        const uniqueNames = [...new Set(data.data.map(card => card.name))]
+        scryfallSuggestions.value = uniqueNames.slice(0, 10)
+      } else {
+        scryfallSuggestions.value = []
+      }
+    } catch (e) {
+      scryfallSuggestions.value = []
+    }
+  }, 300)
+}
+
+// ESTA FUNÇÃO HAVIA SIDO APAGADA NO SEU CÓDIGO
+function selectSuggestion(name) {
+  tempDeckInfo.value.name = name
+  scryfallSuggestions.value = []
+}
+
 const currentEditingPlayerName = computed(() => {
   if (currentEditingPlayerIndex.value !== null && players.value[currentEditingPlayerIndex.value]) {
     return players.value[currentEditingPlayerIndex.value].name
@@ -262,11 +316,13 @@ function openDeckInput(index) {
     name: players.value[index].deck_name || '',
     url: players.value[index].deck_url || ''
   }
+  scryfallSuggestions.value = []
   showDeckInputModal.value = true
 }
 
 function clearTempDeck() {
   tempDeckInfo.value = { name: '', url: '' }
+  scryfallSuggestions.value = []
 }
 
 function saveDeckInput() {
