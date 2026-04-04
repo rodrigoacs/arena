@@ -43,7 +43,7 @@
         >
           <div
             class="font-bold text-center text-sm w-8"
-            :class="index === 0 ? 'text-system-orange' : index === 1 ? 'text-system-gray' : index === 2 ? 'text-[#b45309]' : 'text-system-gray'"
+            :class="index === 0 ? 'text-mythic' : index === 1 ? 'text-rare' : index === 2 ? 'text-uncommon' : 'text-common'"
           >{{ index + 1 }}</div>
           <div
             class="flex-1 px-2 font-medium text-sm truncate min-w-0"

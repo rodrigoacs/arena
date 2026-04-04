@@ -313,12 +313,19 @@
                 <span
                   class="font-bold text-lg w-8"
                   :class="{
-                    'text-system-orange': index === 0,
+                    'text-foil text-2xl': index === 0,
                     'text-system-gray': index === 1,
                     'text-[#b45309]': index === 2
                   }"
                 >{{ index + 1 }}º</span>
-                <span class="flex-1 ml-2 font-medium">{{ player.name }}</span>
+                <span
+                  class="flex-1 ml-2 font-medium"
+                  :class="index === 0 ? 'text-foil text-xl' : ''"
+                >{{ player.name }}</span>
+                <i
+                  v-if="index === 0"
+                  class="pi pi-crown text-foil ml-2 mr-2"
+                ></i>
                 <span class="font-bold text-system-blue bg-system-blue/10 px-2 py-1 rounded">{{ player.points }}
                   pts</span>
               </div>

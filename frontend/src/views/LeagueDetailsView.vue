@@ -92,13 +92,16 @@
               >
                 <td
                   class="p-3 text-center font-bold"
-                  :class="index === 0 ? 'text-system-orange text-xl' : index === 1 ? 'text-system-gray text-lg' : index === 2 ? 'text-[#b45309] text-lg' : 'text-system-gray'"
+                  :class="index === 0 ? 'text-foil text-2xl drop-shadow-md' : index === 1 ? 'text-system-gray text-lg' : index === 2 ? 'text-[#b45309] text-lg' : 'text-system-gray'"
                 >{{ index + 1 }}º</td>
-                <td class="p-3 font-bold whitespace-nowrap">{{ row.player_name }}</td>
+                <td
+                  class="p-3 font-bold text-lg whitespace-nowrap"
+                  :class="index === 0 ? 'text-foil' : ''"
+                >{{ row.player_name }}</td>
                 <td class="p-3 text-center text-system-blue font-bold text-lg">{{ row.league_points }}</td>
-                <td class="p-3 text-center text-yellow-500 font-bold">{{ row.total_golds }}</td>
-                <td class="p-3 text-center text-system-gray font-bold">{{ row.total_silvers }}</td>
-                <td class="p-3 text-center text-orange-600 font-bold">{{ row.total_bronzes }}</td>
+                <td class="p-3 text-center text-mythic font-bold text-lg">{{ row.total_golds }}</td>
+                <td class="p-3 text-center text-rare font-bold text-lg">{{ row.total_silvers }}</td>
+                <td class="p-3 text-center text-uncommon font-bold text-lg">{{ row.total_bronzes }}</td>
                 <td class="p-3 text-center"><span
                     class="bg-system-bg dark:bg-black/20 text-system-gray px-2 py-1 rounded text-xs font-bold"
                   >{{ row.avg_position || '-' }}</span></td>
@@ -160,6 +163,7 @@
                     class="font-bold w-8 text-center text-lg"
                     :class="res.final_position === 1 ? 'text-system-orange' : res.final_position === 2 ? 'text-system-gray' : res.final_position === 3 ? 'text-[#b45309]' : 'text-system-gray'"
                   >{{ res.final_position }}º</div>
+                  <div class="avatar-circle shadow-sm">{{ res.player_name.charAt(0) }}</div>
                   <div class="flex-1 px-3 flex flex-col min-w-0">
                     <span class="font-bold text-sm truncate">{{ res.player_name }}</span>
                     <a

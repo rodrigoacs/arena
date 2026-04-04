@@ -1,36 +1,45 @@
 @import "tailwindcss";
 @import 'primeicons/primeicons.css';
 
-/* 1. Variáveis Nativas que mudam sozinhas com o Modo Escuro */
-:root {
-  --color-system-blue: #007aff;
-  --color-system-green: #34c759;
-  --color-system-red: #ff3b30;
-  --color-system-orange: #ff9500;
-  --color-system-gray: #8e8e93;
+/* Fontes Híbridas: Playfair (Títulos), Inter (Leitura), JetBrains (Dados) */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@700;800&display=swap');
 
-  --color-system-bg: #f2f2f7;
+/* 1. Variáveis de Identidade "Arena / MTG" */
+:root {
+  --color-system-blue: #2563eb;
+  --color-system-green: #10b981;
+  --color-system-red: #ef4444;
+  --color-system-orange: #f59e0b;
+  --color-system-gray: #64748b;
+
+  /* Modo Claro: Vibe Pergaminho */
+  --color-system-bg: #fdfcf8;
   --color-system-card: #ffffff;
-  --color-system-text: #000000;
-  --color-system-text-sec: #3c3c43;
-  --color-system-border: #c6c6c8;
+  --color-system-text: #0f172a;
+  --color-system-text-sec: #475569;
+  --color-system-border: #e2e8f0;
+
+  /* Cores de Raridade MTG */
+  --color-mythic: #df7e00;
+  --color-rare: #d4af37;
+  --color-uncommon: #94a3b8;
+  --color-common: #475569;
 }
 
 [data-theme="dark"] {
-  --color-system-blue: #0a84ff;
-  --color-system-green: #30d158;
-  --color-system-red: #ff453a;
-  --color-system-orange: #ff9f0a;
+  --color-system-blue: #3b82f6;
 
-  --color-system-bg: #141414;
-  /* True Black para ecrãs OLED */
-  --color-system-card: #1c1c1e;
-  --color-system-text: #ffffff;
-  --color-system-text-sec: #ebebf5;
-  --color-system-border: #38383a;
+  /* Modo Escuro: Vibe Obsidiana */
+  --color-system-bg: #0b0f19;
+  --color-system-card: #151e2e;
+  --color-system-text: #f8fafc;
+  --color-system-text-sec: #cbd5e1;
+  --color-system-border: #1e293b;
+
+  --color-common: #94a3b8;
 }
 
-/* 2. Dizemos ao Tailwind v4 quais as cores do nosso tema Apple HIG */
+/* 2. Registro no motor Tailwind v4 */
 @theme {
   --color-system-blue: var(--color-system-blue);
   --color-system-green: var(--color-system-green);
@@ -43,10 +52,19 @@
   --color-system-text-sec: var(--color-system-text-sec);
   --color-system-border: var(--color-system-border);
 
-  /* Registamos as animações no motor Tailwind */
+  --color-mythic: var(--color-mythic);
+  --color-rare: var(--color-rare);
+  --color-uncommon: var(--color-uncommon);
+  --color-common: var(--color-common);
+
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
   --animate-fade-in: fadeIn 0.2s ease;
   --animate-scale-up: scaleUp 0.2s ease;
   --animate-slide-in: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-foil: foil 3s linear infinite;
 
   @keyframes fadeIn {
     from {
@@ -81,20 +99,46 @@
       opacity: 1;
     }
   }
-}
 
-/* 3. Estilos Base e Componentes Nativos */
-@layer base {
-  body {
-    @apply bg-system-bg text-system-text antialiased transition-colors duration-300;
+  @keyframes foil {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    100% {
+      background-position: 200% 50%;
+    }
   }
 }
 
-@layer components {
+/* 3. Estilos de Base */
+@layer base {
+  body {
+    @apply bg-system-bg text-system-text font-sans antialiased transition-colors duration-300;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.025'/%3E%3C/svg%3E");
+  }
 
-  /* Botões */
+  [data-theme="dark"] body {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .ios-large-title {
+    @apply font-serif tracking-tight text-system-text;
+  }
+
+  .rank-number {
+    @apply font-mono font-bold;
+  }
+}
+
+/* 4. Componentes */
+@layer components {
   .ios-btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-3 rounded-[10px] font-semibold cursor-pointer border-none text-[1rem] transition-opacity;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-3 rounded-[10px] font-semibold cursor-pointer border-none text-[1rem] transition-opacity font-sans;
   }
 
   .ios-btn:active:not(:disabled) {
@@ -106,48 +150,48 @@
   }
 
   .ios-btn-primary {
-    @apply bg-system-blue text-white;
+    @apply bg-system-blue text-white shadow-md shadow-system-blue/20;
   }
 
   .ios-btn-danger {
-    @apply bg-system-red text-white;
+    @apply bg-system-red text-white shadow-md shadow-system-red/20;
   }
 
   .ios-btn-success {
-    @apply bg-system-green text-white;
+    @apply bg-system-green text-white shadow-md shadow-system-green/20;
   }
 
   .ios-btn-text {
-    @apply bg-transparent text-system-blue p-2;
+    @apply bg-transparent text-system-blue p-2 shadow-none;
   }
 
   .ios-icon-btn {
-    @apply bg-system-card border border-system-border cursor-pointer rounded-full flex items-center justify-center transition-colors text-system-text hover:bg-black/5;
+    @apply bg-system-card border border-system-border cursor-pointer rounded-full flex items-center justify-center transition-colors text-system-text hover:bg-black/5 dark:hover:bg-white/5 shadow-sm;
   }
 
-  /* Secções e Listas Agrupadas */
   .ios-grouped-section {
     @apply mb-8 w-full;
   }
 
   .ios-grouped-label {
-    @apply text-xs font-semibold text-system-gray mb-1.5 ml-4 uppercase tracking-wide;
+    @apply text-xs font-bold text-system-gray mb-1.5 ml-4 uppercase tracking-widest font-sans;
   }
 
   .ios-grouped-list {
-    @apply bg-system-card rounded-[10px] overflow-hidden border border-system-border transition-colors duration-300;
+    @apply bg-system-card rounded-[12px] overflow-hidden border border-system-border transition-colors duration-300 shadow-sm;
   }
 
   .ios-list-item {
-    @apply flex items-center justify-between px-4 py-3 border-b border-system-border last:border-none bg-system-card transition-colors duration-300;
+    @apply flex items-center justify-between px-4 py-3 border-b border-system-border last:border-none bg-system-card transition-colors duration-300 font-sans;
   }
 
-  /* Inputs */
   .ios-input {
+    -webkit-appearance: none;
     @apply bg-transparent border-none text-base text-system-text font-sans outline-none w-full appearance-none;
   }
 
   .ios-native-select {
+    -webkit-appearance: none;
     @apply appearance-none bg-transparent border-none text-base font-sans text-system-text outline-none cursor-pointer py-1 pl-1;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238e8e93'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9'%3E%3C/path%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -156,13 +200,13 @@
     padding-right: 1.5rem;
   }
 
-  /* Modais e Toasts */
   .ios-modal-overlay {
-    @apply fixed inset-0 bg-black/40 flex items-center justify-center z-[1000] p-4 backdrop-blur-sm animate-fade-in;
+    @apply fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-4 backdrop-blur-sm animate-fade-in;
   }
 
   .ios-modal {
-    @apply bg-system-card rounded-2xl w-full max-w-[400px] max-h-[calc(90vh-env(safe-area-inset-bottom))] flex flex-col shadow-2xl animate-scale-up;
+    @apply bg-system-card rounded-2xl w-full max-w-[400px] flex flex-col shadow-2xl animate-scale-up;
+    max-height: calc(90vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px);
   }
 
   .ios-modal-lg {
@@ -174,7 +218,7 @@
   }
 
   .ios-modal-header {
-    @apply p-5 border-b border-system-border font-bold text-lg text-center rounded-t-2xl bg-system-card;
+    @apply p-5 border-b border-system-border font-bold text-lg text-center rounded-t-2xl bg-system-card font-serif;
   }
 
   .ios-modal-content {
@@ -187,12 +231,11 @@
   }
 
   .ios-toast-container {
-    @apply fixed top-5 right-5 z-[9999] bg-white/90 backdrop-blur-md rounded-[10px] shadow-lg px-5 py-4 flex flex-col gap-1 border border-system-border border-l-4 border-l-system-blue animate-slide-in;
+    @apply fixed top-5 right-5 z-[9999] bg-white/90 backdrop-blur-md rounded-[10px] shadow-lg px-5 py-4 flex flex-col gap-1 border border-system-border border-l-4 border-l-system-blue animate-slide-in font-sans;
   }
 
-  /* Ajuste manual para o toast no modo escuro não usar cor estrita branca */
   [data-theme="dark"] .ios-toast-container {
-    @apply bg-[#1c1c1e]/90;
+    @apply bg-[#151e2e]/90;
   }
 
   .ios-toast-container.success {
@@ -201,5 +244,25 @@
 
   .ios-toast-container.error {
     @apply border-l-system-red;
+  }
+}
+
+/* 5. Utilitários Customizados */
+@layer utilities {
+  .text-foil {
+    background: linear-gradient(90deg, #df7e00 0%, #fef08a 25%, #df7e00 50%, #fef08a 75%, #df7e00 100%);
+    background-size: 200% auto;
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    @apply animate-foil font-extrabold;
+  }
+
+  .avatar-circle {
+    @apply w-8 h-8 rounded-full bg-system-blue/10 text-system-blue border border-system-blue/20 flex items-center justify-center font-bold text-xs shrink-0 font-sans uppercase shadow-sm;
+  }
+
+  [data-theme="dark"] .avatar-circle {
+    @apply bg-system-blue/20 text-blue-300 border-blue-500/30;
   }
 }
