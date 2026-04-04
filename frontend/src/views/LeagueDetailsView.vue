@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-system-bg pb-12">
+  <div class="min-h-screen pb-12">
     <div
       v-if="toastMessage"
       class="ios-toast-container"
@@ -9,26 +9,30 @@
       <div class="ios-toast-detail">{{ toastMessage.detail }}</div>
     </div>
 
-    <header class="px-4 pt-6 pb-2 flex justify-between items-center max-w-[1000px] mx-auto">
-      <div class="flex items-center gap-2">
+    <header
+      class="px-4 pt-6 pb-4 flex justify-between items-center w-full sticky top-0 z-50 bg-system-bg/80 dark:bg-system-bgDark/80 backdrop-blur-md border-b border-system-border dark:border-system-borderDark/50"
+    >
+      <div class="flex items-center justify-between gap-2 max-w-[1000px] mx-auto w-full">
+        <div class="flex items-center gap-2">
+          <button
+            class="ios-icon-btn text-system-gray w-9 h-9"
+            @click="goBack"
+            title="Voltar"
+          >
+            <i class="pi pi-chevron-left"></i>
+          </button>
+          <h1 class="text-3xl font-bold tracking-tight m-0">Painel da Liga</h1>
+        </div>
         <button
-          class="ios-icon-btn text-system-gray"
-          @click="goBack"
-          title="Voltar"
+          class="ios-btn ios-btn-primary py-2 px-3 text-sm"
+          @click="goToTournament"
         >
-          <i class="pi pi-chevron-left text-xl"></i>
+          <i class="pi pi-play"></i> Nova Etapa
         </button>
-        <h1 class="text-3xl font-bold tracking-tight m-0">Painel da Liga</h1>
       </div>
-      <button
-        class="ios-btn ios-btn-primary"
-        @click="goToTournament"
-      >
-        <i class="pi pi-play"></i> Nova Etapa
-      </button>
     </header>
 
-    <main class="max-w-[1000px] mx-auto px-4 py-4">
+    <main class="max-w-[1000px] mx-auto px-4 py-6">
       <div class="ios-grouped-section mb-10">
         <div class="flex justify-between items-end mb-2 px-2">
           <div class="ios-grouped-label !m-0">🏆 RANKING GERAL</div>
@@ -51,12 +55,24 @@
         <div class="ios-grouped-list overflow-x-auto">
           <div
             v-if="isLoading"
-            class="p-6 text-center text-system-gray"
-          ><i class="pi pi-spin pi-spinner mr-2"></i> Carregando ranking...</div>
+            class="p-6"
+          >
+            <div
+              v-for="i in 4"
+              :key="i"
+              class="flex gap-4 mb-4 animate-pulse"
+            >
+              <div class="h-6 bg-system-gray/20 rounded w-8"></div>
+              <div class="h-6 bg-system-gray/20 rounded flex-1"></div>
+              <div class="h-6 bg-system-gray/20 rounded w-12"></div>
+            </div>
+          </div>
+
           <div
             v-else-if="ranking.length === 0"
             class="p-6 text-center text-system-gray"
           >Nenhum resultado registrado.</div>
+
           <table
             v-else
             class="w-full text-left border-collapse min-w-[600px]"
@@ -95,7 +111,8 @@
                   :class="index === 0 ? 'text-foil text-2xl drop-shadow-md' : index === 1 ? 'text-system-gray text-lg' : index === 2 ? 'text-[#b45309] text-lg' : 'text-system-gray'"
                 >{{ index + 1 }}º</td>
                 <td
-                  class="p-3 font-bold text-lg whitespace-nowrap"
+                  class="p-3 font-bold text-lg max-w-[180px] sm:max-w-[250px] truncate"
+                  :title="row.player_name"
                   :class="index === 0 ? 'text-foil' : ''"
                 >{{ row.player_name }}</td>
                 <td class="p-3 text-center text-system-blue font-bold text-lg">{{ row.league_points }}</td>
@@ -114,10 +131,20 @@
 
       <div class="ios-grouped-section">
         <div class="ios-grouped-label pl-2">ÚLTIMOS TORNEIOS</div>
+
         <div
-          v-if="tournaments.length === 0 && !isLoading"
+          v-if="isLoading"
+          class="ios-grouped-list p-6"
+        >
+          <div class="h-6 bg-system-gray/20 rounded w-1/2 mb-4 animate-pulse"></div>
+          <div class="h-6 bg-system-gray/20 rounded w-1/3 animate-pulse"></div>
+        </div>
+
+        <div
+          v-else-if="tournaments.length === 0"
           class="ios-grouped-list p-6 text-center text-system-gray"
         >Nenhum torneio realizado.</div>
+
         <div
           v-else
           class="flex flex-col gap-4"
@@ -165,7 +192,10 @@
                   >{{ res.final_position }}º</div>
                   <div class="avatar-circle shadow-sm">{{ res.player_name.charAt(0) }}</div>
                   <div class="flex-1 px-3 flex flex-col min-w-0">
-                    <span class="font-bold text-sm truncate">{{ res.player_name }}</span>
+                    <span
+                      class="font-bold text-sm truncate"
+                      :title="res.player_name"
+                    >{{ res.player_name }}</span>
                     <a
                       v-if="res.deck_url"
                       :href="res.deck_url"
@@ -530,7 +560,11 @@ function goBack() { router.push({ name: 'dashboard' }) }
 function goToTournament() { router.push({ name: 'tournament' }) }
 function formatDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '' }
 function formatStatus(status) { const m = { 'active': 'Ao Vivo', 'finished': 'Finalizado', 'imported': 'Importado', 'pending': 'Pendente' }; return m[status] || status }
-function copyPublicLink() { navigator.clipboard.writeText(`${window.location.origin}/l/${api.getLeagueId()}`).then(() => showToast({ severity: 'success', summary: 'Link Copiado!', detail: 'Envie aos jogadores.' })) }
+
+function copyPublicLink() {
+  navigator.clipboard.writeText(`${window.location.origin}/l/${api.getLeagueId()}`).then(() => showToast({ severity: 'success', summary: 'Link Copiado!', detail: 'Envie aos jogadores.' }))
+}
+
 function exportCSV() {
   if (!ranking.value || ranking.value.length === 0) return
   let csvContent = "data:text/csv;charset=utf-8,Posição,Jogador,Pontos,1º Lugar,2º Lugar,3º Lugar,Média de Posição,Etapas Jogadas\n"

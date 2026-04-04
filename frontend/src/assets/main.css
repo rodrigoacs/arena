@@ -1,8 +1,8 @@
-@import "tailwindcss";
-@import 'primeicons/primeicons.css';
-
 /* Fontes Híbridas: Playfair (Títulos), Inter (Leitura), JetBrains (Dados) */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@700;800&display=swap');
+
+@import "tailwindcss";
+@import 'primeicons/primeicons.css';
 
 /* 1. Variáveis de Identidade "Arena / MTG" */
 :root {
@@ -138,7 +138,7 @@
 /* 4. Componentes */
 @layer components {
   .ios-btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-3 rounded-[10px] font-semibold cursor-pointer border-none text-[1rem] transition-opacity font-sans;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-3 rounded-[10px] font-semibold cursor-pointer border-none text-[1rem] transition-all duration-200 active:scale-[0.97] font-sans;
   }
 
   .ios-btn:active:not(:disabled) {
@@ -166,7 +166,7 @@
   }
 
   .ios-icon-btn {
-    @apply bg-system-card border border-system-border cursor-pointer rounded-full flex items-center justify-center transition-colors text-system-text hover:bg-black/5 dark:hover:bg-white/5 shadow-sm;
+    @apply bg-system-card border border-system-border cursor-pointer rounded-full flex items-center justify-center transition-all duration-200 text-system-text hover:bg-black/5 dark:hover:bg-white/5 shadow-sm active:scale-90;
   }
 
   .ios-grouped-section {

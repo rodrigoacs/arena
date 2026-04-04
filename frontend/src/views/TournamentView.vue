@@ -1,5 +1,5 @@
 <template>
-  <div class="flex w-full h-screen bg-system-bg text-system-text overflow-hidden relative">
+  <div class="flex w-full h-screen text-system-text overflow-hidden relative">
 
     <button
       class="lg:hidden absolute top-4 left-4 z-[1001] ios-icon-btn w-11 h-11 bg-white/90 dark:bg-[#1c1c1e]/90 backdrop-blur-md shadow-md"

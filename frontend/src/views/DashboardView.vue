@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-page">
+  <div class="min-h-screen pb-12">
     <div
       v-if="toastMessage"
       class="ios-toast-container"
@@ -9,26 +9,27 @@
       <div class="ios-toast-detail">{{ toastMessage.detail }}</div>
     </div>
 
-    <header class="ios-page-header">
-      <div class="flex justify-content-between align-items-center max-w-content">
-        <div class="flex align-items-center gap-3">
-          <h1 class="ios-large-title m-0">Dashboard</h1>
+    <header
+      class="px-4 pt-6 pb-4 flex justify-between items-center w-full sticky top-0 z-50 bg-system-bg/80 dark:bg-system-bgDark/80 backdrop-blur-md border-b border-system-border dark:border-system-borderDark/50"
+    >
+      <div class="flex justify-between items-center w-full max-w-[800px] mx-auto">
+        <div class="flex items-center gap-3">
+          <h1 class="text-3xl font-bold tracking-tight m-0">Painel Principal</h1>
           <button
-            class="ios-icon-btn p-2"
+            class="ios-icon-btn w-9 h-9"
             @click="toggleTheme"
-            style="font-size: 1.2rem;"
           >
-            <i :class="isDark ? 'pi pi-sun text-yellow-500' : 'pi pi-moon text-blue-500'"></i>
+            <i :class="isDark ? 'pi pi-sun text-yellow-500' : 'pi pi-moon text-system-blue'"></i>
           </button>
         </div>
         <button
-          class="ios-btn ios-btn-text text-red"
+          class="ios-btn ios-btn-text text-system-red p-0"
           @click="handleLogout"
         >Sair</button>
       </div>
     </header>
 
-    <main class="max-w-content p-3">
+    <main class="max-w-[800px] mx-auto px-4 py-6">
       <div class="ios-grouped-section">
         <div class="ios-grouped-label">Administração</div>
         <div class="ios-grouped-list">
@@ -36,30 +37,47 @@
             class="ios-list-item cursor-pointer"
             @click="openRosterModal"
           >
-            <span class="flex align-items-center gap-2"><i class="pi pi-users text-blue-500"></i> Gerir Elenco</span>
-            <i class="pi pi-chevron-right text-gray-400"></i>
+            <span class="flex items-center gap-2"><i class="pi pi-users text-system-blue"></i> Gerir
+              Participantes</span>
+            <i class="pi pi-chevron-right text-system-gray"></i>
           </div>
           <div
             class="ios-list-item cursor-pointer"
             @click="showCreateDialog = true"
           >
-            <span class="flex align-items-center gap-2"><i class="pi pi-plus-circle text-green-500"></i> Nova
+            <span class="flex items-center gap-2"><i class="pi pi-plus-circle text-system-green"></i> Criar Nova
               Liga</span>
-            <i class="pi pi-chevron-right text-gray-400"></i>
+            <i class="pi pi-chevron-right text-system-gray"></i>
           </div>
         </div>
       </div>
 
       <div class="ios-grouped-section">
         <div class="ios-grouped-label">Minhas Ligas Ativas</div>
+
         <div
           v-if="isLoading"
-          class="p-4 text-center text-gray-500"
-        >A carregar...</div>
+          class="ios-grouped-list"
+        >
+          <div
+            v-for="i in 3"
+            :key="i"
+            class="ios-list-item animate-pulse"
+          >
+            <div class="flex flex-col gap-2 w-full">
+              <div class="h-4 bg-system-gray/20 rounded w-1/3"></div>
+              <div class="h-3 bg-system-gray/20 rounded w-1/4"></div>
+            </div>
+            <i class="pi pi-chevron-right text-system-gray/30"></i>
+          </div>
+        </div>
+
         <div
           v-else-if="leagues.length === 0"
-          class="p-4 text-center text-gray-500"
-        >Nenhuma liga encontrada.</div>
+          class="p-6 text-center text-system-gray bg-system-card rounded-xl border border-system-border shadow-sm"
+        >
+          Nenhuma liga encontrada.
+        </div>
 
         <div
           v-else
@@ -71,14 +89,14 @@
             class="ios-list-item cursor-pointer"
             @click="enterLeague(league.id)"
           >
-            <div class="flex flex-column gap-1">
-              <span class="font-bold">{{ league.name }}</span>
+            <div class="flex flex-col">
+              <span class="font-bold text-lg">{{ league.name }}</span>
               <span
-                class="text-xs text-gray-500"
+                class="text-xs text-system-gray mt-1"
                 v-if="league.season"
               >Temporada: {{ league.season }}</span>
             </div>
-            <i class="pi pi-chevron-right text-gray-400"></i>
+            <i class="pi pi-chevron-right text-system-gray"></i>
           </div>
         </div>
       </div>
@@ -91,12 +109,9 @@
     >
       <div class="ios-modal">
         <div class="ios-modal-header">Nova Liga</div>
-        <div
-          class="ios-modal-content p-0"
-          style="background: var(--bg-primary);"
-        >
-          <div class="ios-grouped-section mt-4">
-            <div class="ios-grouped-list mx-3">
+        <div class="ios-modal-content p-0 bg-system-bg dark:bg-system-bgDark">
+          <div class="ios-grouped-section mt-6 mx-4">
+            <div class="ios-grouped-list">
               <div class="ios-list-item"><input
                   type="text"
                   v-model="newLeague.name"
@@ -132,41 +147,39 @@
       @click.self="showRosterModal = false"
     >
       <div class="ios-modal ios-modal-lg">
-        <div class="ios-modal-header">Elenco Global</div>
+        <div class="ios-modal-header">Participantes Globais</div>
         <div class="ios-modal-content p-0">
-          <div class="ios-grouped-section mt-4 mx-3">
+          <div class="ios-grouped-section mt-6 mx-4">
             <div class="ios-grouped-list">
-              <div class="ios-list-item">
+              <div class="ios-list-item pr-2">
                 <input
                   type="text"
                   v-model="newPlayerName"
                   placeholder="Adicionar jogador..."
                   @keydown.enter="handleAddPlayer"
                   class="ios-input"
-                  style="flex: 1; min-width: 0;"
                 />
                 <button
-                  class="ios-btn ios-btn-text p-0 flex-shrink-0"
+                  class="ios-btn ios-btn-text p-2 shrink-0"
                   @click="handleAddPlayer"
                   :disabled="!newPlayerName || isSavingPlayer"
                 >Adicionar</button>
               </div>
             </div>
-            <div class="ios-grouped-desc">Este elenco estará disponível em todas as ligas.</div>
+            <p class="text-xs text-system-gray mt-2 mx-2">Este elenco estará disponível em todas as ligas.</p>
           </div>
 
-          <div class="ios-grouped-section mx-3">
+          <div class="ios-grouped-section mx-4">
             <div class="ios-grouped-label">Jogadores ({{ players.length }})</div>
-            <div class="ios-grouped-list roster-list">
+            <div class="ios-grouped-list max-h-[40vh] overflow-y-auto">
               <div
                 v-if="isLoadingPlayers"
-                class="p-3 text-center text-gray-500"
-              >A carregar...</div>
+                class="p-6 text-center text-system-gray"
+              ><i class="pi pi-spin pi-spinner"></i></div>
               <div
                 v-else-if="players.length === 0"
-                class="p-3 text-center text-gray-500"
+                class="p-6 text-center text-system-gray"
               >Nenhum jogador.</div>
-
               <div
                 v-else
                 v-for="player in players"
@@ -175,7 +188,7 @@
               >
                 <div
                   v-if="editingPlayerId === player.id"
-                  class="flex w-full align-items-center gap-2"
+                  class="flex w-full items-center gap-2"
                 >
                   <input
                     type="text"
@@ -184,23 +197,23 @@
                     @keydown.enter="saveEdit(player.id)"
                   />
                   <i
-                    class="pi pi-check text-green-500 cursor-pointer"
+                    class="pi pi-check text-system-green cursor-pointer text-lg"
                     @click="saveEdit(player.id)"
                   ></i>
                   <i
-                    class="pi pi-times text-gray-400 cursor-pointer"
+                    class="pi pi-times text-system-gray cursor-pointer text-lg"
                     @click="cancelEdit"
                   ></i>
                 </div>
                 <template v-else>
-                  <span>{{ player.name }}</span>
-                  <div class="flex gap-3">
+                  <span class="font-medium">{{ player.name }}</span>
+                  <div class="flex gap-4">
                     <i
-                      class="pi pi-pencil text-blue-500 cursor-pointer"
+                      class="pi pi-pencil text-system-blue cursor-pointer"
                       @click="startEdit(player)"
                     ></i>
                     <i
-                      class="pi pi-trash text-red-500 cursor-pointer"
+                      class="pi pi-trash text-system-red cursor-pointer"
                       @click="confirmDelete(player)"
                     ></i>
                   </div>
@@ -209,7 +222,7 @@
             </div>
           </div>
         </div>
-        <div class="ios-modal-footer flex-column p-3">
+        <div class="ios-modal-footer flex-col p-4">
           <button
             class="ios-btn ios-btn-primary w-full"
             @click="showRosterModal = false"
@@ -224,10 +237,10 @@
       @click.self="showDeleteConfirm = false"
     >
       <div class="ios-modal">
-        <div class="ios-modal-header">Confirmar Exclusão</div>
+        <div class="ios-modal-header text-system-red">Confirmar Exclusão</div>
         <div class="ios-modal-content text-center">
           <p>Excluir <strong>{{ playerToDelete?.name }}</strong>?</p>
-          <p class="text-xs text-red-500 mt-2">O histórico em torneios será apagado.</p>
+          <p class="text-xs text-system-red mt-2">O histórico em torneios será apagado.</p>
         </div>
         <div class="ios-modal-footer">
           <button
@@ -338,111 +351,3 @@ async function handleDeletePlayer() {
   } catch (error) { } finally { isDeleting.value = false }
 }
 </script>
-
-<style scoped>
-.ios-page-header {
-  padding: 3rem 1.5rem 1rem;
-}
-
-.ios-large-title {
-  font-size: 2.2rem;
-  font-weight: 800;
-  margin: 0;
-  letter-spacing: -0.5px;
-}
-
-.max-w-content {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.flex {
-  display: flex;
-}
-
-.flex-column {
-  flex-direction: column;
-}
-
-.justify-content-between {
-  justify-content: space-between;
-}
-
-.align-items-center {
-  align-items: center;
-}
-
-.gap-1 {
-  gap: 0.25rem;
-}
-
-.gap-2 {
-  gap: 0.5rem;
-}
-
-.gap-3 {
-  gap: 1rem;
-}
-
-.mt-4 {
-  margin-top: 1.5rem;
-}
-
-.mb-4 {
-  margin-bottom: 1.5rem;
-}
-
-.mx-3 {
-  margin-left: 1rem;
-  margin-right: 1rem;
-}
-
-.p-0 {
-  padding: 0;
-}
-
-.p-3 {
-  padding: 1rem;
-}
-
-.w-full {
-  width: 100%;
-}
-
-.text-xs {
-  font-size: 0.75rem;
-}
-
-.font-bold {
-  font-weight: 700;
-}
-
-.text-gray-400 {
-  color: #9ca3af;
-}
-
-.text-gray-500 {
-  color: #6b7280;
-}
-
-.text-blue-500 {
-  color: var(--system-blue);
-}
-
-.text-green-500 {
-  color: var(--system-green);
-}
-
-.text-red-500 {
-  color: var(--system-red);
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.roster-list {
-  max-height: 40vh;
-  overflow-y: auto;
-}
-</style>

@@ -1,6 +1,6 @@
 <template>
   <aside
-    class="w-full lg:w-[350px] shrink-0 bg-system-bg h-full flex flex-col border-r border-system-border dark:border-system-borderDark"
+    class="w-full lg:w-[350px] shrink-0 bg-transparent h-full flex flex-col border-r border-system-border dark:border-system-borderDark"
   >
     <div
       class="p-5 bg-system-card/80 dark:bg-system-cardDark/80 backdrop-blur-md border-b border-system-border dark:border-system-borderDark sticky top-0 z-10"
