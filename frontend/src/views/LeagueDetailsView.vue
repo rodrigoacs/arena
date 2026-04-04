@@ -221,7 +221,6 @@
       class="workspace-dialog"
     >
       <div class="import-workspace">
-
         <div class="workspace-sidebar">
           <div class="apple-form-section">
             <div class="apple-section-label">1. DADOS DO EVENTO</div>
@@ -264,6 +263,12 @@
                 v-tooltip.top="'Adicionar Jogador'"
               />
             </div>
+          </div>
+
+          <div class="ios-tip mt-5">
+            <i class="pi pi-lightbulb"></i>
+            <p>Reconstrua as mesas exatas. Jogadores já sentados numa rodada não aparecerão nas outras mesas da mesma
+              rodada.</p>
           </div>
         </div>
 
@@ -626,7 +631,7 @@ const isImportValid = computed(() => {
       }
 
       if (playersInThisTable === 1) {
-        importError.value = `A Mesa ${tIndex + 1} da Rodada ${rIndex + 1} tem apenas 1 jogador preenchido. Mesas ativas exigem no mínimo 2 jogadores (ou deixe a mesa toda em branco).`
+        importError.value = `A Mesa ${tIndex + 1} da Rodada ${rIndex + 1} tem apenas 1 jogador preenchido. Mesas ativas exigem no mínimo 2 jogadores.`
         return false
       }
     }
@@ -653,9 +658,10 @@ async function handleImport() {
           playerStats[pid].matchCount++
           playerStats[pid].positionsSum += seat.pos
 
-          if (seat.pos === 1) { playerStats[pid].points += 3; playerStats[pid].golds++ }
-          if (seat.pos === 2) { playerStats[pid].points += 2; playerStats[pid].silvers++ }
-          if (seat.pos === 3) { playerStats[pid].points += 1; playerStats[pid].bronzes++ }
+          if (seat.pos === 1) { playerStats[pid].points += 4; playerStats[pid].golds++ }
+          if (seat.pos === 2) { playerStats[pid].points += 3; playerStats[pid].silvers++ }
+          if (seat.pos === 3) { playerStats[pid].points += 2; playerStats[pid].bronzes++ }
+          if (seat.pos === 4) { playerStats[pid].points += 1 }
         })
       })
     })

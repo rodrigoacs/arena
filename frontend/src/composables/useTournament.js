@@ -204,9 +204,11 @@ export function useTournament() {
       const originalPlayer = players.value.find(p => p.id === player.id)
       if (originalPlayer) {
         let points = 0
-        if (position === 1) points = 3
-        if (position === 2) points = 2
-        if (position === 3) points = 1
+        if (position === 1) points = 4
+        if (position === 2) points = 3
+        if (position === 3) points = 2
+        if (position === 4) points = 1
+
         originalPlayer.points = (originalPlayer.points || 0) + points
         if (!originalPlayer.matches) originalPlayer.matches = []
         originalPlayer.matches.push({ round: currentRound.value, table: table.number, position, points })
