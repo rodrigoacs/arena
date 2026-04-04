@@ -69,9 +69,12 @@
                     class="p-3 text-center font-bold"
                     :class="'text-pos-' + (index + 1)"
                   >{{ index + 1 }}º</td>
-                  <td class="p-3 font-bold text-lg">{{ row.player_name }}</td>
+                  <td
+                    class="p-3 font-bold"
+                    style="white-space: nowrap;"
+                  >{{ row.player_name }}</td>
                   <td class="p-3 text-center"><span class="bg-blue-50 text-blue-500 px-2 py-1 border-round font-bold">{{
-                      row.league_points }}</span></td>
+                    row.league_points }}</span></td>
                   <td class="p-3 text-center text-yellow-500 font-bold text-lg">{{ row.total_golds }}</td>
                   <td class="p-3 text-center text-gray-400 font-bold text-lg">{{ row.total_silvers }}</td>
                   <td class="p-3 text-center text-orange-600 font-bold text-lg">{{ row.total_bronzes }}</td>
@@ -150,7 +153,7 @@
                       ><i class="pi pi-id-card"></i> {{ res.deck_name }}</span>
                     </div>
                     <div class="font-bold text-blue-500 text-sm bg-blue-50 px-2 py-1 border-round">{{ res.total_points
-                      }} pts</div>
+                    }} pts</div>
                   </div>
                 </div>
               </div>

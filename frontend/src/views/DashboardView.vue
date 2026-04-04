@@ -143,9 +143,10 @@
                   placeholder="Adicionar jogador..."
                   @keydown.enter="handleAddPlayer"
                   class="ios-input"
+                  style="flex: 1; min-width: 0;"
                 />
                 <button
-                  class="ios-btn ios-btn-text p-0"
+                  class="ios-btn ios-btn-text p-0 flex-shrink-0"
                   @click="handleAddPlayer"
                   :disabled="!newPlayerName || isSavingPlayer"
                 >Adicionar</button>

@@ -49,6 +49,7 @@
           <div
             class="flex-1 px-2 font-medium text-sm white-space-nowrap overflow-hidden text-overflow-ellipsis"
             :title="player.name"
+            style="min-width: 0;"
           >{{ player.name }}</div>
           <div
             class="font-bold text-blue-500"

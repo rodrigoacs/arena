@@ -103,7 +103,10 @@
                   class="p-3 text-center font-bold"
                   :class="'text-pos-' + (index + 1)"
                 >{{ index + 1 }}º</td>
-                <td class="p-3 font-bold">{{ row.player_name }}</td>
+                <td
+                  class="p-3 font-bold"
+                  style="white-space: nowrap;"
+                >{{ row.player_name }}</td>
                 <td class="p-3 text-center text-blue-500 font-bold text-lg">{{ row.league_points }}</td>
                 <td class="p-3 text-center text-yellow-500 font-bold">{{ row.total_golds }}</td>
                 <td class="p-3 text-center text-gray-500 font-bold">{{ row.total_silvers }}</td>

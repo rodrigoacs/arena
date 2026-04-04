@@ -129,13 +129,17 @@
                 class="ios-list-item flex-column align-items-start py-3"
               >
                 <span class="font-bold mb-2">{{ player.name }}</span>
-                <div class="flex w-full gap-2">
+                <div
+                  class="flex w-full gap-2"
+                  style="flex-wrap: wrap;"
+                >
                   <button
                     v-for="pos in currentTables[selectedTable].players.length"
                     :key="pos"
                     class="ios-pos-btn"
                     :class="{ 'selected': playerResults[playerIndex] === pos }"
                     @click="selectPosition(playerIndex, pos)"
+                    style="min-width: 45px;"
                   >
                     {{ pos }}º
                   </button>

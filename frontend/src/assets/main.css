@@ -56,6 +56,7 @@ body {
 }
 
 .ios-btn {
+  -webkit-appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -149,6 +150,7 @@ body {
 }
 
 .ios-input {
+  -webkit-appearance: none;
   background: transparent;
   border: none;
   font-size: 1rem;
@@ -259,6 +261,12 @@ body {
 .ios-toast-detail {
   font-size: 0.85rem;
   color: var(--text-secondary);
+}
+
+@media (max-width: 600px) {
+  .ios-modal {
+    max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 40px);
+  }
 }
 
 @keyframes slideIn {
