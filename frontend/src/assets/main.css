@@ -4,22 +4,20 @@
 @import "tailwindcss";
 @import 'primeicons/primeicons.css';
 
-/* 1. Variáveis de Identidade "Arena / MTG" */
+/* 1. Variáveis de Tema */
 :root {
-  /* AVISA O NAVEGADOR QUE O TEMA PADRÃO É CLARO */
   color-scheme: light;
+  --color-system-blue: #e11d48;
+  --color-system-green: #16a34a;
+  --color-system-red: #dc2626;
+  --color-system-orange: #ea580c;
+  --color-system-gray: #525252;
 
-  --color-system-blue: #2563eb;
-  --color-system-green: #10b981;
-  --color-system-red: #ef4444;
-  --color-system-orange: #f59e0b;
-  --color-system-gray: #64748b;
-
-  --color-system-bg: #fdfcf8;
+  --color-system-bg: #fffbeb;
   --color-system-card: #ffffff;
-  --color-system-text: #0f172a;
-  --color-system-text-sec: #475569;
-  --color-system-border: #e2e8f0;
+  --color-system-text: #171717;
+  --color-system-text-sec: #52525b;
+  --color-system-border: #d4d4d8;
 
   --color-mythic: #df7e00;
   --color-rare: #d4af37;
@@ -28,16 +26,13 @@
 }
 
 [data-theme="dark"] {
-  /* A MÁGICA PARA ELEMENTOS NATIVOS (SELECTS, CALENDÁRIOS) FICAREM ESCUROS */
   color-scheme: dark;
-
-  --color-system-blue: #3b82f6;
-
-  --color-system-bg: #0b0f19;
-  --color-system-card: #151e2e;
-  --color-system-text: #f8fafc;
-  --color-system-text-sec: #cbd5e1;
-  --color-system-border: #1e293b;
+  --color-system-blue: #fc4964;
+  --color-system-bg: #171717;
+  --color-system-card: #262626;
+  --color-system-text: #fafafa;
+  --color-system-text-sec: #a3a3a3;
+  --color-system-border: #404040;
 
   --color-common: #94a3b8;
 }
@@ -137,16 +132,11 @@
     @apply font-mono font-bold;
   }
 
-  /* =========================================================
-     CUSTOM SCROLLBARS (Estilo macOS)
-     ========================================================= */
-  /* Scrollbar fina padrão Firefox */
   * {
     scrollbar-width: thin;
     scrollbar-color: rgba(100, 116, 139, 0.4) transparent;
   }
 
-  /* Scrollbars para Chrome, Edge e Safari */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -158,7 +148,6 @@
 
   ::-webkit-scrollbar-thumb {
     background-color: rgba(100, 116, 139, 0.3);
-    /* Cinza translúcido */
     border-radius: 10px;
     border: 2px solid transparent;
     background-clip: padding-box;
@@ -170,7 +159,6 @@
 
   [data-theme="dark"] ::-webkit-scrollbar-thumb {
     background-color: rgba(203, 213, 225, 0.2);
-    /* Cinza claro translúcido no dark mode */
   }
 
   [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
@@ -243,7 +231,6 @@
     padding-right: 1.5rem;
   }
 
-  /* GARANTE QUE O FUNDO DAS OPÇÕES COMBINE COM O TEMA */
   .ios-native-select option {
     @apply bg-system-card text-system-text;
   }
@@ -311,7 +298,7 @@
   }
 
   [data-theme="dark"] .avatar-circle {
-    @apply bg-system-blue/20 text-blue-300 border-blue-500/30;
+    @apply bg-system-blue/20 text-system-blue border-system-blue/30;
   }
 
   .text-mythic {

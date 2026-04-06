@@ -19,13 +19,12 @@
 
     <template v-else>
       <header
-        class="pt-10 pb-6 px-4 text-center border-b border-system-border dark:border-system-borderDark bg-system-card dark:bg-system-cardDark"
+        class="px-4 pt-6 pb-4 flex flex-col items-center justify-center text-center w-full sticky top-0 z-50 bg-system-bg/80 dark:bg-system-bgDark/80 backdrop-blur-md border-b border-system-border dark:border-system-borderDark/50"
       >
-        <i class="pi pi-bolt text-system-blue text-4xl mb-3"></i>
         <h1 class="text-3xl font-bold tracking-tight m-0">{{ league.name }}</h1>
         <p
           v-if="league.season"
-          class="text-system-gray text-sm font-medium mt-2"
+          class="text-system-gray text-sm font-medium mt-1"
         >Temporada {{ league.season }}</p>
       </header>
 
