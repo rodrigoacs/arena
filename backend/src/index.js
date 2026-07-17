@@ -6,20 +6,26 @@ import leagueRoutes from './routes/leagueRoutes.js'
 import playerRoutes from './routes/playerRoutes.js'
 import tournamentRoutes from './routes/tournamentRoutes.js'
 import resultRoutes from './routes/resultRoutes.js'
-import publicRoutes from './routes/publicRoutes.js' // Novo Import
+import publicRoutes from './routes/publicRoutes.js'
 
 import { authMiddleware } from './middlewares/auth.js'
 
 const app = express()
 
-app.use(cors())
+const allowedOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean)
+
+app.use(cors({
+  origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+  credentials: true
+}))
 app.use(express.json())
 
-// --- Rotas Púbicas (Não exigem Token) ---
 app.use('/api/admins', adminRoutes)
-app.use('/api/public', publicRoutes) // Rota para a galera ver o ranking
+app.use('/api/public', publicRoutes)
 
-// --- Rotas Protegidas (Exigem o Token JWT do Organizador) ---
 app.use('/api/leagues', authMiddleware, leagueRoutes)
 app.use('/api/players', authMiddleware, playerRoutes)
 app.use('/api/tournaments', authMiddleware, tournamentRoutes)

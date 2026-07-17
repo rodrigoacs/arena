@@ -4,7 +4,7 @@ import { createPlayer, getAdminPlayers, updatePlayer, deletePlayer } from '../co
 const router = Router()
 
 router.post('/', createPlayer)
-router.get('/admin/:admin_id', getAdminPlayers)
+router.get('/mine', getAdminPlayers)
 router.put('/:id', updatePlayer)
 router.delete('/:id', deletePlayer)
 

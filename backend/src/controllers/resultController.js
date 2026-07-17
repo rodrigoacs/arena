@@ -1,17 +1,45 @@
-import { query } from '../config/db.js'
+import { query, getClient } from '../config/db.js'
+
+function isSafeUrl(url) {
+  if (!url) return true
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
 
 export const saveTournamentResults = async (req, res) => {
-  try {
-    const { tournament_id, results } = req.body
+  const admin_id = req.adminId
+  const { tournament_id, results } = req.body
 
-    if (!tournament_id || !Array.isArray(results) || results.length === 0) {
-      return res.status(400).json({ error: 'ID do torneio e array de resultados são obrigatórios.' })
+  if (!tournament_id || !Array.isArray(results) || results.length === 0) {
+    return res.status(400).json({ error: 'ID do torneio e array de resultados são obrigatórios.' })
+  }
+
+  for (const result of results) {
+    if (result.deck_url && !isSafeUrl(result.deck_url)) {
+      return res.status(400).json({ error: 'Link de deck inválido.' })
+    }
+  }
+
+  const client = await getClient()
+
+  try {
+    const tournamentCheck = await client.query(
+      'SELECT id FROM tournaments WHERE id = $1 AND admin_id = $2',
+      [tournament_id, admin_id]
+    )
+
+    if (tournamentCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'Torneio inválido ou não pertence a este admin.' })
     }
 
-    await query('BEGIN')
+    await client.query('BEGIN')
 
     for (const result of results) {
-      await query(
+      await client.query(
         `INSERT INTO tournament_results 
          (tournament_id, player_id, final_position, total_points, tiebreaker_golds, tiebreaker_silvers, tiebreaker_bronzes, deck_name, deck_url) 
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -38,24 +66,35 @@ export const saveTournamentResults = async (req, res) => {
       )
     }
 
-    await query(
+    await client.query(
       `UPDATE tournaments SET status = 'finished', active_state = NULL WHERE id = $1`,
       [tournament_id]
     )
 
-    await query('COMMIT')
+    await client.query('COMMIT')
 
     res.status(200).json({ message: 'Resultados salvos e torneio finalizado com sucesso.' })
   } catch (error) {
-    await query('ROLLBACK')
+    try { await client.query('ROLLBACK') } catch (_) { }
     console.error('Erro ao salvar resultados:', error)
     res.status(500).json({ error: 'Erro interno ao processar os resultados.' })
+  } finally {
+    client.release()
   }
 }
 
 export const getLeagueRanking = async (req, res) => {
   try {
+    const admin_id = req.adminId
     const { league_id } = req.params
+
+    const leagueCheck = await query(
+      'SELECT id FROM leagues WHERE id = $1 AND admin_id = $2',
+      [league_id, admin_id]
+    )
+    if (leagueCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'Liga inválida ou não pertence a este admin.' })
+    }
 
     const sql = `
       SELECT 

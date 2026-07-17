@@ -1,10 +1,7 @@
-const API_URL = 'https://arena.biblioplexo.com/api'
-// const API_URL = `http://localhost:3333/api`
-
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333/api'
 
 export const api = {
   getToken() { return localStorage.getItem('arena_token') },
-  getAdminId() { return localStorage.getItem('arena_admin_id') },
   getLeagueId() { return localStorage.getItem('arena_league_id') },
 
   setSession(adminId, token) {
@@ -55,24 +52,24 @@ export const api = {
   },
 
   async getAdminLeagues() {
-    return this.request(`/leagues/admin/${this.getAdminId()}`)
+    return this.request('/leagues/mine')
   },
 
   async createLeague(name, season) {
     return this.request('/leagues', {
       method: 'POST',
-      body: JSON.stringify({ admin_id: this.getAdminId(), name, season })
+      body: JSON.stringify({ name, season })
     })
   },
 
   async getPlayers() {
-    return this.request(`/players/admin/${this.getAdminId()}`)
+    return this.request('/players/mine')
   },
 
   async createPlayer(name) {
     return this.request('/players', {
       method: 'POST',
-      body: JSON.stringify({ admin_id: this.getAdminId(), name })
+      body: JSON.stringify({ name })
     })
   },
 
@@ -93,7 +90,6 @@ export const api = {
     return this.request('/tournaments', {
       method: 'POST',
       body: JSON.stringify({
-        admin_id: this.getAdminId(),
         league_id: this.getLeagueId(),
         name,
         tournament_date: date,

@@ -2,12 +2,11 @@ import { query } from '../config/db.js'
 
 export const createLeague = async (req, res) => {
   try {
-    // Em um cenário real com JWT, o admin_id viria do token de autenticação (req.user.id).
-    // Por enquanto, vamos receber no body para testar a estrutura.
-    const { admin_id, name, season } = req.body
+    const admin_id = req.adminId
+    const { name, season } = req.body
 
-    if (!admin_id || !name) {
-      return res.status(400).json({ error: 'admin_id e name são obrigatórios.' })
+    if (!name) {
+      return res.status(400).json({ error: 'name é obrigatório.' })
     }
 
     const result = await query(
@@ -24,7 +23,7 @@ export const createLeague = async (req, res) => {
 
 export const getAdminLeagues = async (req, res) => {
   try {
-    const { admin_id } = req.params
+    const admin_id = req.adminId
 
     const result = await query(
       'SELECT * FROM leagues WHERE admin_id = $1 ORDER BY created_at DESC',

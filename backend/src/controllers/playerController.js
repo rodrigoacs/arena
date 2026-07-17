@@ -2,10 +2,11 @@ import { query } from '../config/db.js'
 
 export const createPlayer = async (req, res) => {
   try {
-    const { admin_id, name } = req.body
+    const admin_id = req.adminId
+    const { name } = req.body
 
-    if (!admin_id || !name) {
-      return res.status(400).json({ error: 'admin_id e name são obrigatórios.' })
+    if (!name) {
+      return res.status(400).json({ error: 'name é obrigatório.' })
     }
 
     const result = await query(
@@ -25,7 +26,7 @@ export const createPlayer = async (req, res) => {
 
 export const getAdminPlayers = async (req, res) => {
   try {
-    const { admin_id } = req.params
+    const admin_id = req.adminId
 
     const result = await query(
       'SELECT id, name, created_at FROM players WHERE admin_id = $1 ORDER BY name ASC',
@@ -41,6 +42,7 @@ export const getAdminPlayers = async (req, res) => {
 
 export const updatePlayer = async (req, res) => {
   try {
+    const admin_id = req.adminId
     const { id } = req.params
     const { name } = req.body
 
@@ -49,8 +51,8 @@ export const updatePlayer = async (req, res) => {
     }
 
     const result = await query(
-      'UPDATE players SET name = $1 WHERE id = $2 RETURNING *',
-      [name, id]
+      'UPDATE players SET name = $1 WHERE id = $2 AND admin_id = $3 RETURNING *',
+      [name, id, admin_id]
     )
 
     if (result.rows.length === 0) {
@@ -69,9 +71,13 @@ export const updatePlayer = async (req, res) => {
 
 export const deletePlayer = async (req, res) => {
   try {
+    const admin_id = req.adminId
     const { id } = req.params
 
-    const result = await query('DELETE FROM players WHERE id = $1 RETURNING id', [id])
+    const result = await query(
+      'DELETE FROM players WHERE id = $1 AND admin_id = $2 RETURNING id',
+      [id, admin_id]
+    )
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Jogador não encontrado.' })

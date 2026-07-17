@@ -4,6 +4,6 @@ import { createLeague, getAdminLeagues } from '../controllers/leagueController.j
 const router = Router()
 
 router.post('/', createLeague)
-router.get('/admin/:admin_id', getAdminLeagues)
+router.get('/mine', getAdminLeagues)
 
 export default router

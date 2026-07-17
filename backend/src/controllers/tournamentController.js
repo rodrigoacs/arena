@@ -2,10 +2,21 @@ import { query } from '../config/db.js'
 
 export const createTournament = async (req, res) => {
   try {
-    const { admin_id, league_id, name, tournament_date, status } = req.body
+    const admin_id = req.adminId
+    const { league_id, name, tournament_date, status } = req.body
 
-    if (!admin_id || !name || !tournament_date) {
-      return res.status(400).json({ error: 'admin_id, name e tournament_date são obrigatórios.' })
+    if (!name || !tournament_date) {
+      return res.status(400).json({ error: 'name e tournament_date são obrigatórios.' })
+    }
+
+    if (league_id) {
+      const leagueCheck = await query(
+        'SELECT id FROM leagues WHERE id = $1 AND admin_id = $2',
+        [league_id, admin_id]
+      )
+      if (leagueCheck.rows.length === 0) {
+        return res.status(403).json({ error: 'Liga inválida ou não pertence a este admin.' })
+      }
     }
 
     const result = await query(
@@ -23,7 +34,16 @@ export const createTournament = async (req, res) => {
 
 export const getLeagueTournaments = async (req, res) => {
   try {
+    const admin_id = req.adminId
     const { league_id } = req.params
+
+    const leagueCheck = await query(
+      'SELECT id FROM leagues WHERE id = $1 AND admin_id = $2',
+      [league_id, admin_id]
+    )
+    if (leagueCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'Liga inválida ou não pertence a este admin.' })
+    }
 
     const sql = `
       SELECT 
@@ -58,8 +78,18 @@ export const getLeagueTournaments = async (req, res) => {
 
 export const deleteTournament = async (req, res) => {
   try {
+    const admin_id = req.adminId
     const { id } = req.params
-    await query('DELETE FROM tournaments WHERE id = $1', [id])
+
+    const result = await query(
+      'DELETE FROM tournaments WHERE id = $1 AND admin_id = $2 RETURNING id',
+      [id, admin_id]
+    )
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Torneio não encontrado.' })
+    }
+
     res.status(200).json({ message: 'Torneio cancelado e removido do banco com sucesso.' })
   } catch (error) {
     console.error('Erro ao deletar torneio:', error)
