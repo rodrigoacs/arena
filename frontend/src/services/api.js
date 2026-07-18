@@ -3,6 +3,13 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333/api'
 export const api = {
   getToken() { return localStorage.getItem('arena_token') },
   getLeagueId() { return localStorage.getItem('arena_league_id') },
+  getHeaders() {
+    const token = this.getToken()
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    }
+  },
 
   setSession(adminId, token) {
     localStorage.setItem('arena_admin_id', adminId)
@@ -124,6 +131,25 @@ export const api = {
     if (!response.ok) {
       throw new Error('Liga não encontrada ou indisponível.')
     }
+    return response.json()
+  },
+
+  async updateTournament(tournamentId, data) {
+    const response = await fetch(`${API_URL}/tournaments/${tournamentId}`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify(data)
+    })
+    if (!response.ok) throw new Error('Falha ao atualizar o torneio')
+    return response.json()
+  },
+
+  async deleteTournament(tournamentId) {
+    const response = await fetch(`${API_URL}/tournaments/${tournamentId}`, {
+      method: 'DELETE',
+      headers: this.getHeaders()
+    })
+    if (!response.ok) throw new Error('Falha ao excluir o torneio')
     return response.json()
   }
 }

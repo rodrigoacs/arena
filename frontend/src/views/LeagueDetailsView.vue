@@ -9,6 +9,7 @@
       <div class="ios-toast-detail">{{ toastMessage.detail }}</div>
     </div>
 
+    <!-- Cabeçalho -->
     <header
       class="px-4 pt-6 pb-4 flex justify-between items-center w-full sticky top-0 z-50 bg-system-bg/80 dark:bg-system-bgDark/80 backdrop-blur-md border-b border-system-border dark:border-system-borderDark/50"
     >
@@ -33,6 +34,7 @@
     </header>
 
     <main class="max-w-[1000px] mx-auto px-4 py-6">
+      <!-- RANKING GERAL -->
       <div class="ios-grouped-section mb-10">
         <div class="flex justify-between items-end mb-2 px-2">
           <div class="ios-grouped-label !m-0">🏆 RANKING GERAL</div>
@@ -53,6 +55,7 @@
         </div>
 
         <div class="ios-grouped-list overflow-x-auto">
+          <!-- Skeleton Loader -->
           <div
             v-if="isLoading"
             class="p-6"
@@ -135,6 +138,7 @@
         </div>
       </div>
 
+      <!-- ÚLTIMOS TORNEIOS -->
       <div class="ios-grouped-section">
         <div class="ios-grouped-label pl-2">ÚLTIMOS TORNEIOS</div>
 
@@ -169,10 +173,19 @@
                 <span class="text-xs text-system-gray mt-1"><i class="pi pi-calendar mr-1"></i> {{
                   formatDate(tourney.tournament_date) }} &bull; {{ formatStatus(tourney.status) }}</span>
               </div>
-              <i
-                class="pi text-system-gray"
-                :class="expandedTournaments[tourney.id] ? 'pi-chevron-up' : 'pi-chevron-down'"
-              ></i>
+              <div class="flex items-center gap-3">
+                <button
+                  class="ios-icon-btn w-8 h-8 text-system-blue border-none bg-system-blue/10 dark:bg-system-blue/20"
+                  @click.stop="openEditTournament(tourney)"
+                  title="Editar Torneio"
+                >
+                  <i class="pi pi-pencil text-sm"></i>
+                </button>
+                <i
+                  class="pi text-system-gray"
+                  :class="expandedTournaments[tourney.id] ? 'pi-chevron-up' : 'pi-chevron-down'"
+                ></i>
+              </div>
             </div>
 
             <div
@@ -234,6 +247,180 @@
       </div>
     </main>
 
+    <!-- MODAL EDITAR TORNEIO EXISTENTE -->
+    <div
+      v-if="showEditTournamentModal"
+      class="ios-modal-overlay items-start pt-8"
+      @click.self="showEditTournamentModal = false"
+    >
+      <div class="ios-modal ios-modal-xl h-[85vh] flex flex-col !max-w-[700px]">
+        <div class="ios-modal-header flex justify-between items-center p-4 bg-system-blue text-white rounded-t-2xl">
+          <button
+            class="ios-btn ios-btn-text text-white/80 hover:text-white p-0"
+            @click="showEditTournamentModal = false"
+          >Cancelar</button>
+          <span class="font-bold">Editar Torneio</span>
+          <button
+            class="ios-btn ios-btn-text font-bold p-0 text-white"
+            @click="saveTournamentEdit"
+            :disabled="isSavingEdit"
+          >
+            <i
+              v-if="isSavingEdit"
+              class="pi pi-spin pi-spinner"
+            ></i><span v-else>Salvar</span>
+          </button>
+        </div>
+
+        <div class="ios-modal-content p-4 overflow-y-auto bg-system-bg dark:bg-system-bgDark">
+          <div class="ios-grouped-section mb-6">
+            <div class="ios-grouped-label">METADADOS</div>
+            <div class="ios-grouped-list">
+              <div class="ios-list-item flex-col items-start py-2">
+                <span class="text-xs font-bold text-system-gray mb-1">NOME DO TORNEIO</span>
+                <input
+                  type="text"
+                  v-model="editingTournament.name"
+                  class="ios-input text-sm font-bold text-system-blue"
+                />
+              </div>
+              <div class="ios-list-item flex-col items-start py-2">
+                <span class="text-xs font-bold text-system-gray mb-1">DATA</span>
+                <input
+                  type="date"
+                  v-model="editingTournament.date"
+                  class="ios-input text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="ios-grouped-section mb-6"
+            v-if="editingTournament.results && editingTournament.results.length > 0"
+          >
+            <div class="ios-grouped-label">RESULTADOS (ALTERAR HISTÓRICO)</div>
+            <div class="ios-grouped-list">
+              <div
+                v-for="(res, idx) in editingTournament.results"
+                :key="idx"
+                class="ios-list-item flex-col items-start py-4 gap-2 border-b border-system-border dark:border-system-borderDark last:border-none"
+              >
+                <div class="flex justify-between w-full items-center mb-1">
+                  <span class="font-bold flex items-center text-lg">
+                    {{ res.player_name }}
+                    <span
+                      class="text-[10px] text-system-gray ml-1.5 font-mono opacity-60"
+                      v-if="res.player_id"
+                    >#{{ shortId(res.player_id) }}</span>
+                  </span>
+                  <div class="flex items-center gap-4">
+                    <!-- Posição Auto-Calculada -->
+                    <div class="flex flex-col items-center">
+                      <span class="text-[10px] text-system-gray font-bold mb-1">POS</span>
+                      <span
+                        class="font-bold text-lg w-8 text-center"
+                        :class="res.final_position === 1 ? 'text-system-orange' : res.final_position === 2 ? 'text-system-gray' : res.final_position === 3 ? 'text-[#b45309]' : 'text-system-text'"
+                      >{{ res.final_position }}º</span>
+                    </div>
+                    <!-- Pontos disparam o re-cálculo -->
+                    <div class="flex flex-col items-center">
+                      <span class="text-[10px] text-system-blue font-bold">PTS</span>
+                      <input
+                        type="number"
+                        v-model.number="res.total_points"
+                        @input="recalculatePositions"
+                        class="ios-input w-14 text-center bg-system-blue/10 text-system-blue font-bold rounded py-1.5"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex w-full gap-3 mt-1">
+                  <!-- Medalhas disparam o re-cálculo -->
+                  <div class="flex-1 flex flex-col gap-1">
+                    <span class="text-[10px] text-mythic font-bold flex items-center justify-center"><i
+                        class="pi pi-star-fill text-[8px] mr-1"
+                      ></i>Ouro</span>
+                    <input
+                      type="number"
+                      v-model.number="res.golds"
+                      @input="recalculatePositions"
+                      class="ios-input w-full text-center bg-black/5 dark:bg-white/5 rounded py-1.5 text-sm"
+                    />
+                  </div>
+                  <div class="flex-1 flex flex-col gap-1">
+                    <span class="text-[10px] text-rare font-bold flex items-center justify-center"><i
+                        class="pi pi-star-fill text-[8px] mr-1"
+                      ></i>Prata</span>
+                    <input
+                      type="number"
+                      v-model.number="res.silvers"
+                      @input="recalculatePositions"
+                      class="ios-input w-full text-center bg-black/5 dark:bg-white/5 rounded py-1.5 text-sm"
+                    />
+                  </div>
+                  <div class="flex-1 flex flex-col gap-1">
+                    <span class="text-[10px] text-uncommon font-bold flex items-center justify-center"><i
+                        class="pi pi-star-fill text-[8px] mr-1"
+                      ></i>Bronze</span>
+                    <input
+                      type="number"
+                      v-model.number="res.bronzes"
+                      @input="recalculatePositions"
+                      class="ios-input w-full text-center bg-black/5 dark:bg-white/5 rounded py-1.5 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div class="w-full mt-2 relative !overflow-visible">
+                  <span class="text-[10px] text-system-gray font-bold mb-1 block">COMANDANTE</span>
+                  <input
+                    type="text"
+                    v-model="res.deck_name"
+                    @input="handleEditScryfallSearch(idx)"
+                    placeholder="Nome em inglês..."
+                    class="ios-input text-sm bg-black/5 dark:bg-white/5 rounded p-2 w-full font-bold text-system-blue"
+                  />
+
+                  <ul
+                    v-if="activeEditScryfallIndex === idx && editScryfallSuggestions.length > 0"
+                    class="absolute z-50 top-full left-0 w-full mt-1 bg-system-card dark:bg-system-cardDark border border-system-border dark:border-system-borderDark rounded-lg shadow-xl max-h-[150px] overflow-y-auto"
+                  >
+                    <li
+                      v-for="sug in editScryfallSuggestions"
+                      :key="sug"
+                      @click="selectEditSuggestion(idx, sug)"
+                      class="px-3 py-2 text-sm border-b border-system-border dark:border-system-borderDark last:border-none cursor-pointer hover:bg-system-blue hover:text-white transition-colors"
+                    >
+                      {{ sug }}
+                    </li>
+                  </ul>
+                </div>
+                <div class="w-full mt-1">
+                  <input
+                    type="text"
+                    v-model="res.deck_url"
+                    placeholder="Link da Lista (Opcional)"
+                    class="ios-input text-sm bg-black/5 dark:bg-white/5 rounded p-2 w-full text-system-gray"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-center mt-6 mb-4">
+            <button
+              class="ios-btn ios-btn-text text-system-red bg-system-red/10 px-6 py-3 rounded-xl font-bold transition-all hover:bg-system-red hover:text-white"
+              @click="confirmDeleteTournament(editingTournament.id)"
+            >
+              <i class="pi pi-trash mr-2"></i> Excluir Torneio Permanentemente
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div
       v-if="showImportModal"
       class="ios-modal-overlay items-start pt-8"
@@ -261,6 +448,7 @@
         <div
           class="ios-modal-content p-0 flex flex-col md:flex-row flex-1 overflow-visible bg-system-bg dark:bg-system-bgDark"
         >
+          <!-- Sidebar -->
           <div
             class="w-full md:w-[300px] bg-system-card dark:bg-system-cardDark border-b md:border-b-0 md:border-r border-system-border dark:border-system-borderDark overflow-y-auto p-4 shrink-0"
           >
@@ -308,6 +496,7 @@
             </div>
           </div>
 
+          <!-- Main Content -->
           <div class="flex-1 overflow-y-auto p-4 lg:p-6">
             <div class="flex justify-between items-center mb-4">
               <h3 class="m-0 text-lg font-bold">Rodadas e Mesas</h3>
@@ -400,6 +589,7 @@
               </div>
             </div>
 
+            <!-- Comandantes com Scryfall -->
             <div
               v-if="uniquePlayersInImport.length > 0"
               class="ios-grouped-section mt-8 border-t border-system-border dark:border-system-borderDark pt-6"
@@ -421,7 +611,7 @@
                       type="text"
                       v-model="importDecks[player.id].name"
                       @input="handleScryfallSearch(player.id)"
-                      placeholder="Comandante (em inglês)"
+                      placeholder="Nome em inglês..."
                       class="ios-input text-sm text-system-blue font-bold"
                     />
                     <ul
@@ -488,7 +678,133 @@ const expandedTournaments = ref({})
 const importData = ref({ name: '', date: new Date().toISOString().split('T')[0], rounds: [] })
 const importDecks = ref({})
 
-/* Autocomplete Scryfall (Busca Avançada) para a Máquina do Tempo */
+const showEditTournamentModal = ref(false)
+const isSavingEdit = ref(false)
+const editingTournament = ref({ id: null, name: '', date: '', results: [] })
+
+const activeEditScryfallIndex = ref(null)
+const editScryfallSuggestions = ref([])
+let editSearchApiTimeout = null
+
+function openEditTournament(tourney) {
+  editingTournament.value = {
+    id: tourney.id,
+    name: tourney.name,
+    date: tourney.tournament_date ? tourney.tournament_date.substring(0, 10) : '',
+    results: tourney.results ? JSON.parse(JSON.stringify(tourney.results)) : []
+  }
+  showEditTournamentModal.value = true
+}
+
+function recalculatePositions() {
+  const sorted = [...editingTournament.value.results].sort((a, b) => {
+    const ptsA = Number(a.total_points) || 0
+    const ptsB = Number(b.total_points) || 0
+    const gA = Number(a.golds) || 0
+    const gB = Number(b.golds) || 0
+    const sA = Number(a.silvers) || 0
+    const sB = Number(b.silvers) || 0
+    const bA = Number(a.bronzes) || 0
+    const bB = Number(b.bronzes) || 0
+
+    if (ptsB !== ptsA) return ptsB - ptsA
+    if (gB !== gA) return gB - gA
+    if (sB !== sA) return sB - sA
+    if (bB !== bA) return bB - bA
+    return 0
+  })
+
+  editingTournament.value.results.forEach(res => {
+    const rank = sorted.findIndex(s => s.player_name === res.player_name) + 1
+    res.final_position = rank
+  })
+}
+
+async function handleEditScryfallSearch(idx) {
+  activeEditScryfallIndex.value = idx
+  const q = editingTournament.value.results[idx].deck_name.trim()
+  if (q.length < 3) {
+    editScryfallSuggestions.value = []
+    return
+  }
+  if (editSearchApiTimeout) clearTimeout(editSearchApiTimeout)
+  editSearchApiTimeout = setTimeout(async () => {
+    try {
+      const res = await fetch(`https://api.scryfall.com/cards/search?q=${encodeURIComponent(q + ' is:commander')}`)
+      if (!res.ok) { editScryfallSuggestions.value = []; return }
+      const data = await res.json()
+      if (data.data) {
+        const uniqueNames = [...new Set(data.data.map(card => card.name))]
+        editScryfallSuggestions.value = uniqueNames.slice(0, 10)
+      } else { editScryfallSuggestions.value = [] }
+    } catch (e) { editScryfallSuggestions.value = [] }
+  }, 300)
+}
+
+function selectEditSuggestion(idx, name) {
+  editingTournament.value.results[idx].deck_name = name
+  editScryfallSuggestions.value = []
+  activeEditScryfallIndex.value = null
+}
+
+async function saveTournamentEdit() {
+  isSavingEdit.value = true
+  try {
+    if (api.updateTournament) {
+      await api.updateTournament(editingTournament.value.id, {
+        name: editingTournament.value.name,
+        tournament_date: editingTournament.value.date
+      })
+    } else {
+      console.warn("Função api.updateTournament não encontrada. Edite o api.js.")
+    }
+
+    if (editingTournament.value.results && editingTournament.value.results.length > 0) {
+      const payload = editingTournament.value.results.map(r => ({
+        player_id: r.player_id,
+        final_position: r.final_position,
+        total_points: r.total_points,
+        golds: r.golds,
+        silvers: r.silvers,
+        bronzes: r.bronzes,
+        deck_name: r.deck_name,
+        deck_url: r.deck_url
+      }))
+
+      try {
+        await api.saveResults(editingTournament.value.id, payload)
+      } catch (err) {
+        await api.saveResults({ tournament_id: editingTournament.value.id, results: payload })
+      }
+    }
+
+    showToast({ severity: 'success', summary: 'Salvo', detail: 'O torneio foi editado com sucesso!' })
+    showEditTournamentModal.value = false
+    await loadDashboardData()
+  } catch (e) {
+    console.error("ERRO COMPLETO NA EDIÇÃO DO TORNEIO:", e)
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Falha ao salvar as edições. Verifique o console.' })
+  } finally {
+    isSavingEdit.value = false
+  }
+}
+
+async function confirmDeleteTournament(id) {
+  if (!confirm("Tem certeza que deseja EXCLUIR este torneio permanentemente? O histórico de pontos será apagado.")) return
+  try {
+    if (api.deleteTournament) {
+      await api.deleteTournament(id)
+    } else {
+      console.warn("Função api.deleteTournament não encontrada. Edite o api.js.")
+    }
+    showToast({ severity: 'success', summary: 'Excluído', detail: 'Torneio removido com sucesso!' })
+    showEditTournamentModal.value = false
+    await loadDashboardData()
+  } catch (e) {
+    showToast({ severity: 'error', summary: 'Erro', detail: 'Falha ao excluir o torneio.' })
+  }
+}
+
 const activeScryfallPlayerId = ref(null)
 const scryfallSuggestions = ref([])
 let searchApiTimeout = null
@@ -521,7 +837,6 @@ async function handleScryfallSearch(playerId) {
   }, 300)
 }
 
-// ESTA FUNÇÃO HAVIA SIDO APAGADA NO SEU CÓDIGO
 function selectSuggestion(playerId, name) {
   importDecks.value[playerId].name = name
   scryfallSuggestions.value = []

@@ -1,4 +1,4 @@
-import { query } from '../config/db.js'
+import { query, getClient } from '../config/db.js'
 
 export const createTournament = async (req, res) => {
   try {
@@ -51,11 +51,15 @@ export const getLeagueTournaments = async (req, res) => {
         COALESCE(
           json_agg(
             json_build_object(
+              'player_id', p.id,
               'player_name', p.name,
               'final_position', tr.final_position,
+              'total_points', tr.total_points,
+              'golds', tr.tiebreaker_golds,
+              'silvers', tr.tiebreaker_silvers,
+              'bronzes', tr.tiebreaker_bronzes,
               'deck_name', tr.deck_name,
-              'deck_url', tr.deck_url,
-              'total_points', tr.total_points
+              'deck_url', tr.deck_url
             ) ORDER BY tr.final_position ASC
           ) FILTER (WHERE tr.player_id IS NOT NULL), '[]'
         ) as results
@@ -76,23 +80,60 @@ export const getLeagueTournaments = async (req, res) => {
   }
 }
 
-export const deleteTournament = async (req, res) => {
+export const updateTournament = async (req, res) => {
   try {
     const admin_id = req.adminId
     const { id } = req.params
+    const { name, tournament_date } = req.body
+
+    if (!name || !tournament_date) {
+      return res.status(400).json({ error: 'name e tournament_date são obrigatórios.' })
+    }
 
     const result = await query(
-      'DELETE FROM tournaments WHERE id = $1 AND admin_id = $2 RETURNING id',
-      [id, admin_id]
+      'UPDATE tournaments SET name = $1, tournament_date = $2 WHERE id = $3 AND admin_id = $4 RETURNING *',
+      [name, tournament_date, id, admin_id]
     )
 
     if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Torneio não encontrado ou acesso negado.' })
+    }
+
+    res.status(200).json(result.rows[0])
+  } catch (error) {
+    console.error('Erro ao atualizar torneio:', error)
+    res.status(500).json({ error: 'Erro interno ao atualizar o torneio.' })
+  }
+}
+
+export const deleteTournament = async (req, res) => {
+  const admin_id = req.adminId
+  const { id } = req.params
+
+  const client = await getClient()
+
+  try {
+    const check = await client.query(
+      'SELECT id FROM tournaments WHERE id = $1 AND admin_id = $2',
+      [id, admin_id]
+    )
+
+    if (check.rows.length === 0) {
+      client.release()
       return res.status(404).json({ error: 'Torneio não encontrado.' })
     }
 
-    res.status(200).json({ message: 'Torneio cancelado e removido do banco com sucesso.' })
+    await client.query('BEGIN')
+    await client.query('DELETE FROM tournament_results WHERE tournament_id = $1', [id])
+    await client.query('DELETE FROM tournaments WHERE id = $1', [id])
+    await client.query('COMMIT')
+
+    res.status(200).json({ message: 'Torneio e resultados removidos do banco com sucesso.' })
   } catch (error) {
+    try { await client.query('ROLLBACK') } catch (_) { }
     console.error('Erro ao deletar torneio:', error)
     res.status(500).json({ error: 'Erro interno ao deletar o torneio.' })
+  } finally {
+    client.release()
   }
 }
